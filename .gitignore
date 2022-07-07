@@ -1,0 +1,6 @@
+*.iso
+limine/
+logfile.txt
+*.d
+*.elf
+*.o
