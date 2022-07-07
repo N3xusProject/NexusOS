@@ -22,16 +22,40 @@
  *  SOFTWARE.
  */
 
-#include <libkern/panic.h>
-#include <libkern/log.h>
 
-void panic(void)
-{
-	// TODO: Do a stack dump or something later.
-	__asm__ __volatile__("cli; hlt");
-}
+#ifndef IDT_H
+#define IDT_H
+
+#include <stdint.h>
+
+#define TRAP_GATE_FLAGS 0x8F
+#define INT_GATE_FLAGS 0x8E
+#define IDT_INT_GATE_USER 0xEE
 
 
-void write_panic_msg(void) {
-    kprintf(KERN_PANIC);
-}
+struct InterruptGateDescriptor {
+    uint16_t isr_low16;
+    uint16_t cs;
+    uint8_t ist : 2;
+    uint8_t zero : 1;
+    uint8_t zero1 : 3;
+    uint8_t attr : 4;
+    uint8_t zero2 : 1;
+    uint8_t dpl : 2;
+    uint8_t p : 1;
+    uint16_t isr_mid16;
+    uint32_t isr_high32;
+    uint32_t reserved;
+};
+
+
+struct __attribute__((packed)) IDTR {
+    uint16_t limit;
+    uint64_t base;
+};
+
+
+void idt_install(void);
+void set_idt_desc(uint8_t vector, void* isr, uint32_t flags);
+
+#endif

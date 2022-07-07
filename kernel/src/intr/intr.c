@@ -22,16 +22,31 @@
  *  SOFTWARE.
  */
 
-#include <libkern/panic.h>
-#include <libkern/log.h>
+#include <intr/intr.h>
+#include <intr/exceptions.h>
+#include <intr/IDT.h>
 
-void panic(void)
-{
-	// TODO: Do a stack dump or something later.
-	__asm__ __volatile__("cli; hlt");
-}
+static void(*exceptions[])(void) = {
+    divide_error,
+    debug_exception,
+    general_protection_fault,
+    general_protection_fault,
+    overflow,
+    bound_range_exceeded,
+    invalid_opcode,
+    no_mathcoprocessor,
+    double_fault,
+    general_protection_fault,
+    invalid_tss,
+    segment_not_present,
+    stack_segment_fault,
+    general_protection_fault,
+    page_fault
+};
 
 
-void write_panic_msg(void) {
-    kprintf(KERN_PANIC);
+void intr_init(void) {
+     for (uint8_t i = 0; i <= 0xE; ++i) {
+        set_idt_desc(i, exceptions[i], TRAP_GATE_FLAGS);
+    }
 }

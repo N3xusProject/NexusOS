@@ -22,16 +22,30 @@
  *  SOFTWARE.
  */
 
-#include <libkern/panic.h>
-#include <libkern/log.h>
+#include <intr/IDT.h>
 
-void panic(void)
-{
-	// TODO: Do a stack dump or something later.
-	__asm__ __volatile__("cli; hlt");
+static struct InterruptGateDescriptor idt[256];
+static struct IDTR idtr;
+
+void set_idt_desc(uint8_t vector, void* isr, uint32_t flags) {
+    uint64_t addr = (uint64_t)isr;
+    struct InterruptGateDescriptor* vec = &idt[vector];
+    vec->isr_low16 = addr & 0xFFFF;
+    vec->isr_mid16 = (addr >> 16) & 0xFFFF;
+    vec->isr_high32 = (addr >> 32);
+    vec->p = 1;
+    vec->attr = flags;
+    vec->cs = 0x28;
+    vec->ist = 0;
+    vec->dpl = 3;
+    vec->reserved = 0;
+    vec->zero = 0;
+    vec->zero1 = 0;
+    vec->zero2 = 0;
 }
 
-
-void write_panic_msg(void) {
-    kprintf(KERN_PANIC);
+void idt_install(void) {
+    idtr.limit = sizeof(struct InterruptGateDescriptor) * 256 - 1;
+    idtr.base = (uint64_t)&idt;
+    __asm__ __volatile__("lidt %0" :: "m" (idtr));
 }

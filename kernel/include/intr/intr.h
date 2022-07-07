@@ -22,16 +22,10 @@
  *  SOFTWARE.
  */
 
-#include <libkern/panic.h>
-#include <libkern/log.h>
 
-void panic(void)
-{
-	// TODO: Do a stack dump or something later.
-	__asm__ __volatile__("cli; hlt");
-}
+#ifndef INTR_H
+#define INTR_H
 
+void intr_init(void);
 
-void write_panic_msg(void) {
-    kprintf(KERN_PANIC);
-}
+#endif
