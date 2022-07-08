@@ -28,6 +28,7 @@
 #include <libkern/asm.h>
 #include <libkern/log.h>
 #include <intr/intr.h>
+#include <arch/memory/pmm.h>
 
 static void done(void)
 {
@@ -38,6 +39,9 @@ static void done(void)
 
 static void init(void) {
     intr_init();
+    kprintf(KINFO "Interrupts initialized.\n");
+    pmm_init();
+    kprintf(KINFO "Physical Memory Manager initialized.\n");
 }
 
 // The following will be our kernel's entry point.
@@ -47,7 +51,6 @@ void _start(void)
     kprintf("%s%s\n\n", BOLD_YELLOW, ascii_art);
 
     init();
-    kprintf(BOLD_YELLOW "Interrupts initialized.\n");
 
     done();
 }
