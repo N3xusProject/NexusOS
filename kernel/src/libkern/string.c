@@ -143,3 +143,13 @@ void memzero(void* ptr, size_t n)
 		ptr_ch[i] = 0;
 	}
 }
+
+
+void memset(void* ptr, uint64_t data, size_t n) {
+    char* ptr_ch = ptr;
+
+	for (size_t i = 0; i < n; ++i)
+	{
+		ptr_ch[i] = data;
+	}
+}
