@@ -26,15 +26,15 @@
 
 void bitmap_set_bit(struct Bitmap* bmp, uint32_t bit)
 {
-    bitmap->map[bit / 8] |= (1 << (bit % 8));
+    bmp->map[bit / 8] |= (1 << (bit % 8));
 }
 
 void bitmap_unset_bit(struct Bitmap* bmp, uint32_t bit)
 {
-    bitmap->map[bit / 8] &= ~(1 << (bit % 8));
+    bmp->map[bit / 8] &= ~(1 << (bit % 8));
 }
 
 uint8_t bitmap_check_bit(struct Bitmap* bmp, uint32_t bit)
 {
-    return bitmap->map[bit / 8] & (1 << (bit % 8));
+    return bmp->map[bit / 8] & (1 << (bit % 8));
 }

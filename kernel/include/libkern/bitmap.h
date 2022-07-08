@@ -25,7 +25,7 @@
 #ifndef BITMAP_H
 #define BITMAP_H
 
-#include <stddefh>
+#include <stddef.h>
 #include <stdint.h>
 
 struct Bitmap
