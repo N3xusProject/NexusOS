@@ -23,6 +23,7 @@
  */
 
 #include <libkern/string.h>
+#include <libkern/log.h>
 
 size_t strlen(const char* str)
 {
@@ -140,6 +141,7 @@ void memzero(void* ptr, size_t n)
 
 	for (size_t i = 0; i < n; ++i)
 	{
+        // kprintf("A, %d\n", i);
 		ptr_ch[i] = 0;
 	}
 }

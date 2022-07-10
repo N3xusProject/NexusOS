@@ -22,33 +22,26 @@
  *  SOFTWARE.
  */
 
-#include <intr/intr.h>
-#include <intr/exceptions.h>
-#include <intr/IDT.h>
+#ifndef VMM_H
+#define VMM_H
 
-static void(*exceptions[])(void) = {
-    divide_error,
-    debug_exception,
-    general_protection_fault,
-    general_protection_fault,
-    overflow,
-    bound_range_exceeded,
-    invalid_opcode,
-    no_mathcoprocessor,
-    double_fault,
-    general_protection_fault,
-    invalid_tss,
-    segment_not_present,
-    stack_segment_fault,
-    general_protection_fault,
-    page_fault
+#include <stdint.h>
+
+typedef enum
+{
+    PAGE_P_PRESENT = (1 << 0),
+    PAGE_RW_WRITABLE = (1 << 1),
+    PAGE_US_USER = (1 << 2)
+} PAGE_BIT;
+
+
+struct MappingTable
+{
+    uint64_t entries[512];
 };
 
 
-void intr_init(void) {
-     for (uint8_t i = 0; i <= 0xE; ++i) {
-        set_idt_desc(i, exceptions[i], TRAP_GATE_FLAGS);
-    }
+void vmm_init(void);
+void vmm_map_page(struct MappingTable* _pml4, void* logical, uint32_t flags);
 
-     idt_install();
-}
+#endif
