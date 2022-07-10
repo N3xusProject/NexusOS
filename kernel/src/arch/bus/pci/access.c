@@ -31,7 +31,7 @@
 /*
  *  @brief  Reads a word from a device's configuration
  *          space. A configuration space is a set of registers
- *          that are memory mapped. This registers are used for
+ *          that are memory mapped. These registers are used for
  *          configuration.
  *
  *
