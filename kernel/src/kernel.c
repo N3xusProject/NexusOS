@@ -27,16 +27,27 @@
 #include <limine.h>
 #include <libkern/asm.h>
 #include <libkern/log.h>
+#include <libkern/driverctl.h>
+#include <libkern/driverinit.h>
 #include <intr/intr.h>
 #include <arch/memory/pmm.h>
 #include <arch/memory/vmm.h>
+#include <drivers/ata/ahci_controller.h>
 
 static void done(void)
 {
-  	for (;;) {
+  	for (;;) 
+    {
         __asm__("hlt");
     }
 }
+
+
+static void init_drivers(void)
+{
+    init_hdd();
+}
+
 
 static void init(void) {
     intr_init();
@@ -45,6 +56,8 @@ static void init(void) {
     kprintf(KINFO "Physical Memory Manager initialized.\n");
     vmm_init();
     kprintf(KINFO "Virtual Memory Manager initialized.\n");
+    init_drivers();
+    kprintf(KINFO "Drivers initialized.\n");
 }
 
 // The following will be our kernel's entry point.
