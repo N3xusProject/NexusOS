@@ -36,12 +36,7 @@ void pmm_init(void);
  */
 void* pmm_alloc(void);
 
-/*  
- *  @brief  Frees memory allocated by pmm_alloc()
- *  
- *  @return 0 if failure, otherwise 1.
- */
-
-uint8_t pmm_free(void* ptr);
+// Allocates & zeros frame.
+void* pmm_allocz(void);
 
 #endif
