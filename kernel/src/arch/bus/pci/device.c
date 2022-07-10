@@ -24,7 +24,7 @@
 
 #include <arch/bus/pci/device.h>
 #include <arch/bus/pci/access.h>
-
+#include <libkern/log.h>
 
 struct PCIDevice pci_device_lookup(PCI_CLASSCODE classcode, uint16_t subclass)
 {
@@ -34,7 +34,10 @@ struct PCIDevice pci_device_lookup(PCI_CLASSCODE classcode, uint16_t subclass)
         {
             for (uint8_t func = 0; func < 8; ++func)
             {
-                if (pci_read_class_code(bus, slot, func) == classcode && pci_read_subclass_code(bus, slot, func) == subclass)
+                uint8_t device_class = pci_read_class_code(bus, slot, func);
+                uint8_t device_subclass = pci_read_subclass_code(bus, slot, func); 
+
+                if (device_class == classcode && device_subclass == subclass)
                 {
                     struct PCIDevice dev = {
                         .bus = bus,
