@@ -36,8 +36,9 @@ struct PCIDevice pci_device_lookup(PCI_CLASSCODE classcode, uint16_t subclass)
             {
                 uint8_t device_class = pci_read_class_code(bus, slot, func);
                 uint8_t device_subclass = pci_read_subclass_code(bus, slot, func); 
+                uint8_t vendor_id = pci_read_vendor_id(bus, slot, func);
 
-                if (device_class == classcode && device_subclass == subclass)
+                if (device_class == classcode && device_subclass == subclass && VENDOR_VALID(vendor_id))
                 {
                     struct PCIDevice dev = {
                         .bus = bus,

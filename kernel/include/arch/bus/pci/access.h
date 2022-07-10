@@ -25,6 +25,8 @@
 #ifndef PCI_ACCESS_H
 #define PCI_ACCESS_H
 
+#define VENDOR_VALID(vendor_id) vendor_id != 0xFFFF
+
 #include <stdint.h>
 
 uint16_t pci_read_vendor_id(uint16_t bus, uint8_t slot, uint8_t func);
