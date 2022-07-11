@@ -155,3 +155,26 @@ void memset(void* ptr, uint64_t data, size_t n) {
 		ptr_ch[i] = data;
 	}
 }
+
+
+uint8_t strcmp(const char* str1, const char* str2)
+{
+    uint32_t str1_len, str2_len;
+    str1_len = strlen(str1);
+    str2_len = strlen(str2);
+
+    if (str1_len != str2_len)
+    {
+        return 1;
+    }
+
+    for (uint32_t i = 0; i < str1_len; ++i)
+    {
+        if (str1[i] != str2[i])
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
