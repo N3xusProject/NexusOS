@@ -34,7 +34,14 @@
 static struct PCIDevice hba;
 static volatile HBA_MEM* abar = NULL;
 static uint8_t port_count = 0;
-static HBA_PORT* ports[32];
+HBA_PORT* ports[32];
+
+static struct Drive 
+{
+    __attribute__((aligned(0x400))) char clb[0x400];        // Command list buffer.
+    __attribute__((aligned(0x100))) char fb[0x100];         // FIS buffer.
+    __attribute__((aligned(0x80)))  char ctba[0x1F40];      // Command Table Base Address
+} drives[32];
 
 
 /*  
@@ -91,6 +98,47 @@ static void probe_ports(void)
 }
 
 
+static void init_drive(uint8_t driveno)
+{
+    HBA_PORT* port = ports[driveno];
+    struct Drive* drive = &drives[driveno];
+
+    // Clear ST (start: bit 0), and FRE (FIS Recieve Enable: bit 8) bits.
+    port->cmd &= ~(1 << 0 | 1 << 8);
+
+    // Wait for FR (FIS Recieve Running: bit 14) and CR (Command List Running: bit 15) bits to be clear.
+    while (port->cmd & (1 << 14 | 1 << 15));
+
+    // Physical address of CLB.
+    uint64_t clb_phys = (uint64_t)HIGHER_HALF_DATA_TO_PHYS((uint64_t)&drive->clb);
+
+    // Physical address of FB.
+    uint64_t fb_phys = (uint64_t)HIGHER_HALF_DATA_TO_PHYS((uint64_t)&drive->fb);
+
+    // Set upper and lower CLB fields.
+    port->clb = clb_phys & 0xFFFFFFFF;
+    port->clbu = clb_phys >> 32;
+
+    // Set upper and lower FB fields.
+    port->fb = fb_phys & 0xFFFFFFFF;
+    port->fbu = fb_phys >> 32;
+
+    volatile struct HBA_CMD_HEADER* commandheader = (struct HBA_CMD_HEADER*)&drive->clb;
+
+    uint64_t ctba_phys = (uint64_t)HIGHER_HALF_DATA_TO_PHYS((uint64_t)&drive->ctba);
+
+    for (int i = 0; i < 32; ++i)
+    {
+        commandheader[i].ctba = ctba_phys & 0xFFFFFFFF;
+        commandheader[i].ctbau = ctba_phys >> 32;
+        commandheader[i].prdtl = 8;
+    }
+
+    // Set start bit and FRE bit to start command engine.
+    port->cmd |= (1 << 0 | 1 << 8);
+}
+
+
 uint8_t ahci_sata_exists(void)
 {
     for (uint32_t i = 0; i < port_count; ++i)
@@ -102,6 +150,12 @@ uint8_t ahci_sata_exists(void)
     }
 
     return 0;
+}
+
+
+uint8_t ahci_hba_used_ports(void)
+{
+    return port_count;
 }
 
 uint8_t ahci_hba_init(void)
@@ -117,6 +171,12 @@ uint8_t ahci_hba_init(void)
     kprintf("<AHCI_DRIVER>: AHCI Host Bus Adapter found on PCI bus %x, slot %x\n", hba.bus, hba.slot);
     kprintf("<AHCI_DRIVER>: Probing ports..\n");
     probe_ports();
+
+    // Init all devices.
+    for (uint8_t i = 0; i < port_count; ++i)
+    {
+        init_drive(i);
+    }
 
     return 1;
 }

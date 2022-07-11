@@ -26,7 +26,7 @@
 #define AHCI_CONTROLLER_H
 
 #include <stdint.h>
-
+#include <drivers/ata/ahci_def.h>
 
 /*
  * @brief   Locates AHCI Host Bus Adapter connected to 
@@ -41,5 +41,13 @@ uint8_t ahci_hba_init(void);
  *
  */
 uint8_t ahci_sata_exists(void);
+
+/*
+ *  @brief  Returns the amount of used ports.
+ *
+ */
+uint8_t ahci_hba_used_ports(void);
+
+extern HBA_PORT* ports[32];
 
 #endif
