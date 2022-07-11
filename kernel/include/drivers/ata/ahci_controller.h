@@ -52,7 +52,7 @@ struct Drive
 {
     __attribute__((aligned(0x400))) char clb[0x400];        // Command list buffer.
     __attribute__((aligned(0x100))) char fb[0x100];         // FIS buffer.
-    __attribute__((aligned(0x80)))  char ctba[0x1F40];      // Command Table Base Address
+    __attribute__((aligned(0x80)))  char ctba[0x1F40];      // Command Table Base Address.
     HBA_PORT* port;
 };
 
