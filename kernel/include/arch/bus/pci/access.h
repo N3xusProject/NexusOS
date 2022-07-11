@@ -25,20 +25,19 @@
 #ifndef PCI_ACCESS_H
 #define PCI_ACCESS_H
 
-#define VENDOR_VALID(vendor_id) vendor_id != 0xFFFF
-
 #include <stdint.h>
 
-uint16_t pci_read_vendor_id(uint16_t bus, uint8_t slot, uint8_t func);
-uint16_t pci_read_device_id(uint16_t bus, uint8_t slot, uint8_t func);
-uint8_t pci_read_class_code(uint16_t bus, uint8_t slot, uint8_t func);
-uint8_t pci_read_subclass_code(uint16_t bus, uint8_t slot, uint8_t func);
-uint32_t pci_get_bar0(uint16_t bus, uint8_t slot, uint8_t func);
-uint32_t pci_get_bar1(uint16_t bus, uint8_t slot, uint8_t func);
-uint32_t pci_get_bar2(uint16_t bus, uint8_t slot, uint8_t func);
-uint32_t pci_get_bar3(uint16_t bus, uint8_t slot, uint8_t func);
-uint32_t pci_get_bar4(uint16_t bus, uint8_t slot, uint8_t func);
-uint32_t pci_get_bar5(uint16_t bus, uint8_t slot, uint8_t func);
+uint16_t pci_read_vendor_id(uint8_t bus, uint8_t slot, uint8_t func);
+uint16_t pci_read_device_id(uint8_t bus, uint8_t slot, uint8_t func);
+uint8_t pci_read_class_code(uint8_t bus, uint8_t slot, uint8_t func);
+uint8_t pci_read_subclass_code(uint8_t bus, uint8_t slot, uint8_t func);
+uint8_t pci_read_prog_if(uint8_t bus, uint8_t slot, uint8_t func);
+uint32_t pci_get_bar0(uint8_t bus, uint8_t slot, uint8_t func);
+uint32_t pci_get_bar1(uint8_t bus, uint8_t slot, uint8_t func);
+uint32_t pci_get_bar2(uint8_t bus, uint8_t slot, uint8_t func);
+uint32_t pci_get_bar3(uint8_t bus, uint8_t slot, uint8_t func);
+uint32_t pci_get_bar4(uint8_t bus, uint8_t slot, uint8_t func);
+uint32_t pci_get_bar5(uint8_t bus, uint8_t slot, uint8_t func);
 
 
 #endif

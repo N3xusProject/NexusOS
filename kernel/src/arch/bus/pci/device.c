@@ -26,8 +26,14 @@
 #include <arch/bus/pci/access.h>
 #include <libkern/log.h>
 
-struct PCIDevice pci_device_lookup(PCI_CLASSCODE classcode, uint16_t subclass)
+// Returns 1 if device is valid, otherwise 0.
+static uint8_t verify_device(uint8_t bus, uint8_t slot, uint8_t func)
 {
+    return pci_read_vendor_id(bus, slot, func) != 0xFFFF;
+}
+
+struct PCIDevice pci_device_lookup(PCI_CLASSCODE classcode, uint16_t subclass)
+{ 
     for (uint16_t bus = 0; bus < 256; ++bus)
     {
         for (uint8_t slot = 0; slot < 32; ++slot)
@@ -35,16 +41,15 @@ struct PCIDevice pci_device_lookup(PCI_CLASSCODE classcode, uint16_t subclass)
             for (uint8_t func = 0; func < 8; ++func)
             {
                 uint8_t device_class = pci_read_class_code(bus, slot, func);
-                uint8_t device_subclass = pci_read_subclass_code(bus, slot, func); 
-                uint8_t vendor_id = pci_read_vendor_id(bus, slot, func);
-
-                if (device_class == classcode && device_subclass == subclass && VENDOR_VALID(vendor_id))
+                uint8_t device_subclass = pci_read_subclass_code(bus, slot, func);
+                uint8_t prog_if = pci_read_prog_if(bus, slot, func);
+                if (verify_device(bus, slot, func) && device_class == classcode && device_subclass == subclass && prog_if == 1)
                 {
                     struct PCIDevice dev = {
+                        .valid = 1,
                         .bus = bus,
                         .slot = slot,
-                        .func = func,
-                        .valid = 1
+                        .func = func
                     };
 
                     return dev;
@@ -52,7 +57,6 @@ struct PCIDevice pci_device_lookup(PCI_CLASSCODE classcode, uint16_t subclass)
             }
         }
     }
-
     struct PCIDevice dev = {
         .valid = 0
     };
