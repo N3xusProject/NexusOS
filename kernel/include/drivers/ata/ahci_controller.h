@@ -56,4 +56,10 @@ struct Drive
     HBA_PORT* port;
 };
 
+/*
+ *  @brief  Gives a drive corresponding to a given drive number.
+ *
+ */
+struct Drive* get_drive(uint8_t driveno);
+
 #endif

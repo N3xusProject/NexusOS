@@ -151,6 +151,17 @@ uint8_t ahci_hba_used_ports(void)
     return port_count;
 }
 
+
+struct Drive* get_drive(uint8_t driveno)
+{
+    if (driveno >= port_count)
+    {
+        return NULL;
+    }
+
+    return &drives[driveno];
+}
+
 uint8_t ahci_hba_init(void)
 {
     hba = pci_device_lookup(MASS_STORAGE_CONTROLLER, SERIAL_ATA_CONTROLLER);
