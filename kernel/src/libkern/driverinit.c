@@ -32,10 +32,13 @@ void init_hdd(void)
 {
     if (ahci_hba_init())
     {
-        driverctl_set_driver(DRIVERCLASS_HDD, HDDTYPE_AHCI);
-        return;
+        if (ahci_sata_exists())
+        {
+            driverctl_set_driver(DRIVERCLASS_HDD, HDDTYPE_AHCI);
+            return;
+        }
     }
 
-    kprintf(KERN_PANIC "<DRIVER_INIT>: Could not locate a driver for your HDD!\n");
+    kprintf(KERN_PANIC "<DRIVER_INIT>: Could not initialize HDD!\n");
     panic();
 }
