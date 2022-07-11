@@ -32,6 +32,7 @@
 #include <intr/intr.h>
 #include <arch/memory/pmm.h>
 #include <arch/memory/vmm.h>
+#include <firmware/acpi.h>
 
 static void done(void)
 {
@@ -55,6 +56,8 @@ static void init(void) {
     kprintf(KINFO "Physical Memory Manager initialized.\n");
     vmm_init();
     kprintf(KINFO "Virtual Memory Manager initialized.\n");
+    acpi_init();
+    kprintf(KINFO "ACPI initialized.\n");
     init_drivers();
     kprintf(KINFO "Drivers initialized.\n");
 }
