@@ -34,14 +34,7 @@
 static struct PCIDevice hba;
 static volatile HBA_MEM* abar = NULL;
 static uint8_t port_count = 0;
-HBA_PORT* ports[32];
-
-static struct Drive 
-{
-    __attribute__((aligned(0x400))) char clb[0x400];        // Command list buffer.
-    __attribute__((aligned(0x100))) char fb[0x100];         // FIS buffer.
-    __attribute__((aligned(0x80)))  char ctba[0x1F40];      // Command Table Base Address
-} drives[32];
+static struct Drive drives[32];
 
 
 /*  
@@ -61,7 +54,7 @@ static void get_dev_type(uint8_t portno)
         return;
     }
 
-    ports[port_count++] = port;
+    drives[port_count++].port = port;
 
     switch (port->sig)
     {
@@ -100,7 +93,7 @@ static void probe_ports(void)
 
 static void init_drive(uint8_t driveno)
 {
-    HBA_PORT* port = ports[driveno];
+    HBA_PORT* port = drives[driveno].port;
     struct Drive* drive = &drives[driveno];
 
     // Clear ST (start: bit 0), and FRE (FIS Recieve Enable: bit 8) bits.
@@ -143,7 +136,7 @@ uint8_t ahci_sata_exists(void)
 {
     for (uint32_t i = 0; i < port_count; ++i)
     {
-        if (ports[i]->sig == SATA_SIG_ATA)
+        if (drives[i].port->sig == SATA_SIG_ATA)
         {
             return 1;
         }
