@@ -1,6 +1,6 @@
 # NexusOS 
 
-![badge](https://img.shields.io/github/license/Nexus-C/NexusOS?style=for-the-badge)
+![badge](https://img.shields.io/github/license/N3xusProject/NexusOS?style=for-the-badge)
 
 An OS that just works!
 
