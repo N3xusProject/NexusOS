@@ -26,18 +26,11 @@
 #include <libkern/driverctl.h>
 #include <libkern/log.h>
 #include <libkern/panic.h>
-#include <drivers/ata/ahci_controller.h>
+
 
 void init_hdd(void)
 {
-    if (ahci_hba_init())
-    {
-        if (ahci_sata_exists())
-        {
-            driverctl_set_driver(DRIVERCLASS_HDD, HDDTYPE_AHCI);
-            return;
-        }
-    }
+    return;     // TODO: Initialize a driver.
 
     kprintf(KERN_PANIC "<DRIVER_INIT>: Could not initialize HDD!\n");
     panic();

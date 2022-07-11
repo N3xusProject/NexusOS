@@ -27,6 +27,8 @@
 
 #include <stdint.h>
 
+#define	AHCI_BASE	0x400000
+
 typedef enum
 {
     PAGE_P_PRESENT = (1 << 0),
@@ -43,5 +45,6 @@ struct MappingTable
 
 void vmm_init(void);
 void vmm_map_page(struct MappingTable* _pml4, void* logical, uint32_t flags);
+uint64_t vmm_get_phys(uint64_t logical);
 
 #endif

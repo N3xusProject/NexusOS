@@ -32,7 +32,6 @@
 #include <intr/intr.h>
 #include <arch/memory/pmm.h>
 #include <arch/memory/vmm.h>
-#include <drivers/ata/ahci_controller.h>
 
 static void done(void)
 {

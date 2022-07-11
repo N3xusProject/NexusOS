@@ -102,6 +102,21 @@ void vmm_unmap_page(struct MappingTable* pml4, void* logical)
 }
 
 
+uint64_t vmm_get_phys(uint64_t logical)
+{
+    uint64_t addr = (uint64_t)ALIGN_DOWN((uint64_t)logical, PAGE_SIZE);
+
+    int pml4_idx = (addr >> 39) & 0x1FF;
+    int pdpt_idx = (addr >> 30) & 0x1FF;
+    int pd_idx = (addr >> 21) & 0x1FF;
+    int pt_idx = (addr >> 12) & 0x1FF;
+
+    struct MappingTable* pdpt = (struct MappingTable*)(pml4->entries[pml4_idx] & PAGE_ADDR_MASK);
+    struct MappingTable* pd = (struct MappingTable*)(pdpt->entries[pdpt_idx] & PAGE_ADDR_MASK);
+    struct MappingTable* pt = (struct MappingTable*)(pd->entries[pd_idx] & PAGE_ADDR_MASK);
+
+    return ((pt->entries[pt_idx] >> 12));
+}
 
 void load_pml4(void* pml4_phys);
 
