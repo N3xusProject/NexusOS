@@ -36,5 +36,10 @@
 
 uint8_t ahci_hba_init(void);
 
+/*
+ *  @brief  Returns 1 if a sata drive exists, otherwise 0.
+ *
+ */
+uint8_t ahci_sata_exists(void);
 
 #endif
