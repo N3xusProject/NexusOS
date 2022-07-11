@@ -15,7 +15,7 @@ all-hdd: Nexus.hdd
 
 .PHONY: run
 run: Nexus.iso
-	qemu-system-$(ARCH) -M q35 -m 2G -cdrom Nexus.iso -boot d -monitor stdio -d int -D logfile.txt
+	qemu-system-$(ARCH) -M q35 -m 2G -drive file=Nexus.iso -boot d -monitor stdio -d int -D logfile.txt
 
 .PHONY: run-uefi
 run-uefi: ovmf-$(EFI_ARCH) Nexus.iso
