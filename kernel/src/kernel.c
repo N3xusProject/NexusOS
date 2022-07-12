@@ -33,6 +33,7 @@
 #include <arch/memory/pmm.h>
 #include <arch/memory/vmm.h>
 #include <arch/apic/ioapic.h>
+#include <arch/apic/lapic.h>
 #include <firmware/acpi.h>
 
 static void done(void)
@@ -65,6 +66,9 @@ static void init(void) {
 
     ioapic_init();
     kprintf(KINFO "I/O APIC initialized.\n");
+
+    lapic_init();
+    kprintf(KINFO "LAPIC initialized.\n");
 
     init_drivers();
     kprintf(KINFO "Drivers initialized.\n");
