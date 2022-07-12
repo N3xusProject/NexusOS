@@ -94,6 +94,7 @@ static void parse_madt(void)
                     kprintf(CYAN "I/O APIC ID: %x\n", ioapic->ioapic_id);
                     kprintf(CYAN "I/O APIC MMIO Base: %x\n", ioapic->mmio_base);
                     kprintf(CYAN "Global System Interrupt Base: %x\n\n", ioapic->global_sysintr_base);
+                    ioapic_base = (void*)(uint64_t)ioapic->mmio_base;
                     break;
                 }
         }
