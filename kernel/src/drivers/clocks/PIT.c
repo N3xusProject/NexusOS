@@ -22,46 +22,13 @@
  *  SOFTWARE.
  */
 
-#include <intr/intr.h>
-#include <intr/exceptions.h>
-#include <intr/IDT.h>
-#include <intr/irq.h>
-#include <arch/apic/ioapic.h>
-#include <firmware/acpi.h>
+#include <drivers/clocks/PIT.h>
+#include <arch/bus/io/io.h>
 
-static void(*exceptions[])(void) = {
-    divide_error,
-    debug_exception,
-    general_protection_fault,
-    general_protection_fault,
-    overflow,
-    bound_range_exceeded,
-    invalid_opcode,
-    no_mathcoprocessor,
-    double_fault,
-    general_protection_fault,
-    invalid_tss,
-    segment_not_present,
-    stack_segment_fault,
-    general_protection_fault,
-    page_fault
-};
-
-
-void intr_setup_irqs(void)
+void pit_set_phase(uint16_t hz)
 {
-    // Timer IRQ.
-    set_idt_desc(0x20, irq0, INT_GATE_FLAGS);
-    ioapic_set_entry(acpi_map_irq(0), 0x20);
-}
-
-
-void intr_init(void) 
-{
-     for (uint8_t i = 0; i <= 0xE; ++i) 
-     {
-        set_idt_desc(i, exceptions[i], TRAP_GATE_FLAGS);
-     }
-
-     idt_install();
+    int divisor = 1193180 / hz;         // Calculate divisor.
+    outportb(0x43, 0x36);               // Command byte.
+    outportb(0x40, divisor & 0xFF);     // Low byte of divisor.
+    outportb(0x40, divisor >> 8);       // High byte of divisor.
 }

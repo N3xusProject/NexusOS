@@ -66,6 +66,7 @@ static uint8_t locate_madt(void)
 
 static void parse_madt(void)
 {
+    bsp_lapic_base = (void*)(uint64_t)madt->lapic_addr;
     uint8_t* cur = (uint8_t*)(madt + 1);
     uint8_t* end = (uint8_t*)madt + madt->header.length;
 
@@ -94,6 +95,7 @@ static void parse_madt(void)
                     kprintf(CYAN "I/O APIC ID: %x\n", ioapic->ioapic_id);
                     kprintf(CYAN "I/O APIC MMIO Base: %x\n", ioapic->mmio_base);
                     kprintf(CYAN "Global System Interrupt Base: %x\n\n", ioapic->global_sysintr_base);
+                    ioapic_base = (void*)(uint64_t)ioapic->mmio_base;
                     break;
                 }
         }
@@ -113,6 +115,32 @@ static uint8_t verify_checksum(acpi_header_t* header)
     }
 
     return sum % 0x100 == 0;
+}
+
+
+int acpi_map_irq(uint8_t irq)
+{
+    uint8_t* cur = (uint8_t*)(madt + 1);
+    uint8_t* end = (uint8_t*)madt + madt->header.length;
+
+    while (cur < end)
+    {
+        struct APICHeader* header = (struct APICHeader*)cur;
+        
+        if (header->type == APIC_TYPE_INTERRUPT_OVERRIDE)
+        {
+            struct APICInterruptOverride* intr_ovr = (struct APICInterruptOverride*)cur;
+
+            if (intr_ovr->source == irq)
+            {
+                return intr_ovr->interrupt;
+            }
+        }
+
+        cur += header->length;
+    }
+
+    return irq;
 }
 
 void acpi_init(void)

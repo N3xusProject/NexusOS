@@ -32,7 +32,10 @@
 #include <intr/intr.h>
 #include <arch/memory/pmm.h>
 #include <arch/memory/vmm.h>
+#include <arch/apic/ioapic.h>
+#include <arch/apic/lapic.h>
 #include <firmware/acpi.h>
+#include <drivers/clocks/PIT.h>
 
 static void done(void)
 {
@@ -46,18 +49,35 @@ static void done(void)
 static void init_drivers(void)
 {
     init_hdd();
+    pit_set_phase(DEFAULT_TIMER_PHASE);
+    kprintf("PIT phase set at %d Hz\n", DEFAULT_TIMER_PHASE);
+    __asm__ __volatile__("sti");
 }
 
 
 static void init(void) {
+    __asm__ __volatile__("cli");
     intr_init();
     kprintf(KINFO "Interrupts initialized.\n");
+
     pmm_init();
     kprintf(KINFO "Physical Memory Manager initialized.\n");
+
     vmm_init();
     kprintf(KINFO "Virtual Memory Manager initialized.\n");
+
     acpi_init();
     kprintf(KINFO "ACPI initialized.\n");
+
+    ioapic_init();
+    kprintf(KINFO "I/O APIC initialized.\n");
+
+    lapic_init();
+    kprintf(KINFO "LAPIC initialized.\n");
+
+    intr_setup_irqs();
+    kprintf(KINFO "IRQs setup.\n");
+
     init_drivers();
     kprintf(KINFO "Drivers initialized.\n");
 }

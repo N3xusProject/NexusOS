@@ -22,46 +22,13 @@
  *  SOFTWARE.
  */
 
-#include <intr/intr.h>
-#include <intr/exceptions.h>
-#include <intr/IDT.h>
-#include <intr/irq.h>
-#include <arch/apic/ioapic.h>
-#include <firmware/acpi.h>
 
-static void(*exceptions[])(void) = {
-    divide_error,
-    debug_exception,
-    general_protection_fault,
-    general_protection_fault,
-    overflow,
-    bound_range_exceeded,
-    invalid_opcode,
-    no_mathcoprocessor,
-    double_fault,
-    general_protection_fault,
-    invalid_tss,
-    segment_not_present,
-    stack_segment_fault,
-    general_protection_fault,
-    page_fault
-};
+#ifndef IOAPIC_H
+#define IOAPIC_H
 
+#include <stdint.h>
 
-void intr_setup_irqs(void)
-{
-    // Timer IRQ.
-    set_idt_desc(0x20, irq0, INT_GATE_FLAGS);
-    ioapic_set_entry(acpi_map_irq(0), 0x20);
-}
+void ioapic_init(void);
+void ioapic_set_entry(uint8_t index, uint64_t data);
 
-
-void intr_init(void) 
-{
-     for (uint8_t i = 0; i <= 0xE; ++i) 
-     {
-        set_idt_desc(i, exceptions[i], TRAP_GATE_FLAGS);
-     }
-
-     idt_install();
-}
+#endif
