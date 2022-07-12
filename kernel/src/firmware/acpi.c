@@ -66,6 +66,7 @@ static uint8_t locate_madt(void)
 
 static void parse_madt(void)
 {
+    bsp_lapic_base = (void*)(uint64_t)madt->lapic_addr;
     uint8_t* cur = (uint8_t*)(madt + 1);
     uint8_t* end = (uint8_t*)madt + madt->header.length;
 
@@ -135,7 +136,7 @@ void acpi_init(void)
         panic();
     }
 
-    kprintf("<ACPI_INIT>: RSDT checksum is valid, continuing..\n");
+    kprintf(KINFO "<ACPI_INIT>: RSDT checksum is valid, continuing..\n");
 
     if (!(locate_madt()))
     {
@@ -143,9 +144,10 @@ void acpi_init(void)
         panic();
     }
 
-    kprintf("<ACPI_INIT>: Located MADT.\n\n");
+    kprintf(KINFO "<ACPI_INIT>: Located MADT.\n\n");
     bsp_lapic_base = (void*)(uint64_t)madt->lapic_addr;
 
     // Parse MADT.
     parse_madt();
+    kprintf(KINFO "Processor cores: %d\n", cpu_count);
 }
