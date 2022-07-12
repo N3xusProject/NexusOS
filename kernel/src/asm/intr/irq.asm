@@ -3,6 +3,7 @@
 
 bits 64
 global irq0
+global pit_ticks
 
 extern lapic_send_eoi
 extern kprintf
