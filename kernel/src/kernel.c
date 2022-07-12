@@ -32,6 +32,7 @@
 #include <intr/intr.h>
 #include <arch/memory/pmm.h>
 #include <arch/memory/vmm.h>
+#include <arch/apic/ioapic.h>
 #include <firmware/acpi.h>
 
 static void done(void)
@@ -52,12 +53,19 @@ static void init_drivers(void)
 static void init(void) {
     intr_init();
     kprintf(KINFO "Interrupts initialized.\n");
+
     pmm_init();
     kprintf(KINFO "Physical Memory Manager initialized.\n");
+
     vmm_init();
     kprintf(KINFO "Virtual Memory Manager initialized.\n");
+
     acpi_init();
     kprintf(KINFO "ACPI initialized.\n");
+
+    ioapic_init();
+    kprintf(KINFO "I/O APIC initialized.\n");
+
     init_drivers();
     kprintf(KINFO "Drivers initialized.\n");
 }
