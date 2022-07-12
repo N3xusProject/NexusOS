@@ -134,7 +134,7 @@ void acpi_init(void)
         panic();
     }
 
-    kprintf("<ACPI_INIT>: RSDT checksum is valid, continuing..\n");
+    kprintf(KINFO "<ACPI_INIT>: RSDT checksum is valid, continuing..\n");
 
     if (!(locate_madt()))
     {
@@ -142,9 +142,10 @@ void acpi_init(void)
         panic();
     }
 
-    kprintf("<ACPI_INIT>: Located MADT.\n\n");
+    kprintf(KINFO "<ACPI_INIT>: Located MADT.\n\n");
     bsp_lapic_base = (void*)(uint64_t)madt->lapic_addr;
 
     // Parse MADT.
     parse_madt();
+    kprintf(KINFO "<ACPI_INIT>: Cores: %d\n", cpu_count);
 }
