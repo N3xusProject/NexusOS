@@ -35,6 +35,7 @@
 #include <arch/apic/ioapic.h>
 #include <arch/apic/lapic.h>
 #include <firmware/acpi.h>
+#include <drivers/clocks/PIT.h>
 
 static void done(void)
 {
@@ -48,10 +49,14 @@ static void done(void)
 static void init_drivers(void)
 {
     init_hdd();
+    pit_set_phase(DEFAULT_TIMER_PHASE);
+    kprintf("PIT phase set at %d Hz\n", DEFAULT_TIMER_PHASE);
+    __asm__ __volatile__("sti");
 }
 
 
 static void init(void) {
+    __asm__ __volatile__("cli");
     intr_init();
     kprintf(KINFO "Interrupts initialized.\n");
 
@@ -69,6 +74,9 @@ static void init(void) {
 
     lapic_init();
     kprintf(KINFO "LAPIC initialized.\n");
+
+    intr_setup_irqs();
+    kprintf(KINFO "IRQs setup.\n");
 
     init_drivers();
     kprintf(KINFO "Drivers initialized.\n");

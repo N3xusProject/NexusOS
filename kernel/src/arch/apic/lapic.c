@@ -108,6 +108,12 @@ static void write(uint32_t reg, uint32_t val)
 }
 
 
+void lapic_send_eoi(void)
+{
+    write(LAPIC_EOI, 0);
+}
+
+
 void lapic_init(void)
 {
     // Disable 8259 PIC.
