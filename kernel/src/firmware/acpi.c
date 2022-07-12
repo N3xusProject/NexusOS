@@ -117,6 +117,32 @@ static uint8_t verify_checksum(acpi_header_t* header)
     return sum % 0x100 == 0;
 }
 
+
+int acpi_map_irq(uint8_t irq)
+{
+    uint8_t* cur = (uint8_t*)(madt + 1);
+    uint8_t* end = (uint8_t*)madt + madt->header.length;
+
+    while (cur < end)
+    {
+        struct APICHeader* header = (struct APICHeader*)cur;
+        
+        if (header->type == APIC_TYPE_INTERRUPT_OVERRIDE)
+        {
+            struct APICInterruptOverride* intr_ovr = (struct APICInterruptOverride*)cur;
+
+            if (intr_ovr->source == irq)
+            {
+                return intr_ovr->interrupt;
+            }
+        }
+
+        cur += header->length;
+    }
+
+    return irq;
+}
+
 void acpi_init(void)
 {
     kprintf(KINFO "\n\n<ACPI_INIT>: Fetching CPU Information..\n");

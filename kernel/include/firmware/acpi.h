@@ -25,6 +25,15 @@
 #ifndef ACPI_H
 #define ACPI_H
 
+#include <stdint.h>
+
 void acpi_init(void);
+
+/*
+ *  @brief      Converts an IRQ number
+ *              to a GSI (i.e pin on I/O APIC).
+ *
+ */
+int acpi_map_irq(uint8_t irq);
 
 #endif
