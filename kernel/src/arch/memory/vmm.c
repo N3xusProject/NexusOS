@@ -26,13 +26,14 @@
 #include <arch/memory/pmm.h>
 #include <arch/memory/mem.h>
 #include <libkern/log.h>
+#include <libkern/string.h>
 #include <limine.h>
 #include <stddef.h>
 
 #define PAGE_ADDR_MASK 0x000FFFFFFFFFF000
 
 struct MappingTable* pml4;
-
+struct MappingTable* active_pml4 = NULL;
 
 static void invlpg(void* addr)
 {
@@ -117,13 +118,29 @@ uint64_t vmm_get_phys(uint64_t logical)
     return ((pt->entries[pt_idx] >> 12));
 }
 
+
+struct MappingTable* vmm_mkpml4(void)
+{
+    uint64_t pml4_phys = (uint64_t)pmm_allocz();
+    struct MappingTable* new_pml4 = (struct MappingTable*)pml4_phys;
+
+    for (uint16_t i = 0; i < 512; ++i)
+    {
+        new_pml4->entries[i] = pml4->entries[i];
+    }
+
+    return new_pml4;
+}
+
 void load_pml4(void* pml4_phys);
 
 
 void vmm_init(void)
 {
-    uint64_t pmm_phys = (uint64_t)pmm_allocz();
-    pml4 = (void*)pmm_phys;
+    uint64_t pml4_phys = (uint64_t)pmm_allocz();
+    pml4 = (void*)pml4_phys;
+
+    active_pml4 = pml4;
 
     __asm__ __volatile__("mov %%cr3, %0" : "=r" (pml4));
     __asm__ __volatile__("mov %0, %%cr3" :: "r" (pml4));
