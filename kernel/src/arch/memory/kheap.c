@@ -35,26 +35,25 @@
 #define KHEAP_MAGIC 0xCA75101               // CATS LOL
 #define DATA_START(mem_block) (((char*) mem_block) + sizeof(struct Block))
 
-struct __attribute__((packed)) Block {
+struct __attribute__((packed)) Block 
+{
     uint8_t is_free : 1;
     struct Block* next;
     size_t size;
     uint32_t magic;
-    char data_start[1];                         // First element of data would be data_start + 1.
 };
 
 static struct Block* mem_head = NULL;
 static struct Block* mem_tail = NULL;
-static size_t bytes_allocated;
+static size_t bytes_allocated = 0;
 
 
-// TODO: Change this to be the current in-use pml4 later.
-extern struct MappingTable* pml4;
+extern struct MappingTable* active_pml4;
 
 
 void kheap_init(void) 
 {
-    vmm_map_page(pml4, (void*)KHEAP_START, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
+    vmm_map_page(active_pml4, (void*)KHEAP_START, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
     mem_head = (struct Block*)KHEAP_START;
     mem_head->next = NULL;
     mem_head->size = 0;
