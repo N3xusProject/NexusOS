@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 void* kmalloc(size_t sz);
+void* krealloc(void* old_block, size_t sz);
 void kfree(void* block);
 void kheap_init(void);
 

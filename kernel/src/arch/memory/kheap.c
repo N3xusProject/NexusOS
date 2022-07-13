@@ -24,6 +24,7 @@
 
 #include <libkern/log.h>
 #include <libkern/panic.h>
+#include <libkern/string.h>
 #include <arch/memory/vmm.h>
 #include <arch/memory/mem.h>
 #include <stddef.h>
@@ -32,19 +33,19 @@
 #define KHEAP_LIMIT 0x500+GiB
 #define KHEAP_END 0x500+(KHEAP_LIMIT+1)
 #define KHEAP_MAGIC 0xCA75101               // CATS LOL
-
+#define DATA_START(mem_block) (((char*) mem_block) + sizeof(struct Block))
 
 struct __attribute__((packed)) Block {
-    uint8_t is_free;
+    uint8_t is_free : 1;
     struct Block* next;
-    struct Block* prev;
     size_t size;
     uint32_t magic;
     char data_start[1];                         // First element of data would be data_start + 1.
 };
 
-static struct Block* kheap = (struct Block*)KHEAP_START;
-static size_t mem_allocated = 0;            // In bytes.
+static struct Block* mem_head = NULL;
+static struct Block* mem_tail = NULL;
+static size_t bytes_allocated;
 
 
 // TODO: Change this to be the current in-use pml4 later.
@@ -54,70 +55,83 @@ extern struct MappingTable* pml4;
 void kheap_init(void) 
 {
     vmm_map_page(pml4, (void*)KHEAP_START, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
-    kheap[0].next = NULL;
-    kheap[0].is_free = 1;
-    kheap[0].size = 0;
-    kheap[0].magic = KHEAP_MAGIC;
+    mem_head = (struct Block*)KHEAP_START;
+    mem_head->next = NULL;
+    mem_head->size = 0;
+    mem_head->is_free = 0;
+    mem_head->magic = KHEAP_MAGIC;
+    mem_tail = mem_head;
 }
 
 
 static struct Block* first_fit(size_t size) 
 {
-    vmm_map_page(pml4, (void*)KHEAP_START + mem_allocated, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
+    struct Block* cur_block = mem_head;
 
-    // No memory is left!
-    if (mem_allocated + size >= KHEAP_LIMIT) {
-        return NULL;
-    }
-
-    struct Block* current = &kheap[0];
-    struct Block* prev = NULL;
-
-    while (current != NULL) 
+    while (cur_block != NULL)
     {
-        if (!(current->is_free)) 
+        if (cur_block->is_free && cur_block->size >= size)
         {
-            prev = current;
-            current = current->next;
-        } 
-        else 
-        {
-            return current;
+            return cur_block;
         }
+
+        cur_block = cur_block->next;
     }
 
-    // Nope, nobody is getting memory, almost full.
-    if ((uint64_t)(prev + sizeof(struct Block)) > KHEAP_END)
-    {
-        return NULL;
-    }
-
-    prev->next = (struct Block*)(KHEAP_START + mem_allocated + size);
-    prev->next->magic = KHEAP_MAGIC;
-    prev->size = size;
-    return prev->next;
+    // No memory found.
+    return NULL;
 }
 
 void* kmalloc(size_t sz) 
 {
-    struct Block* hole = first_fit(sz);
-    if (hole == NULL) return NULL;
-
-    hole->is_free = 0;
-    mem_allocated += sz;
-    return hole->data_start;
-}
-
-void kfree(void* block) 
-{
-    struct Block* blk = block - sizeof(struct Block) + 1;
-    if (blk->magic != KHEAP_MAGIC) 
+    if (bytes_allocated + sz > KHEAP_LIMIT)
     {
-        // TODO: Handle the issue and correct it.
-        kprintf(KERN_PANIC "Invalid free or kernel heap corruption detected..\n");
-        panic();
+        return NULL;
     }
 
-    blk->is_free = 1;
-    mem_allocated -= blk->size;
+    struct Block* region = first_fit(sz);
+
+    if (region == NULL)
+    {
+        char* next = DATA_START(mem_tail + mem_tail->size);
+        mem_tail->next = (struct Block*)next;
+        region = mem_tail->next;
+        region->size = sz;
+        region->is_free = 0;
+        region->next = NULL;
+        region->magic = KHEAP_MAGIC;
+        mem_tail = region;
+        bytes_allocated += sz;
+    }
+
+    return DATA_START(region);
+}
+
+
+void kfree(void* block)
+{
+    struct Block* cur_block = mem_head;
+
+    while (cur_block != NULL && block != DATA_START(cur_block))
+    {
+        cur_block->is_free = 1;
+        cur_block = cur_block->next;
+    }
+}
+
+
+void* krealloc(void* old_block, size_t sz)
+{
+    struct Block* old_block_data = (struct Block*)(old_block - sizeof(struct Block));
+
+    if (old_block_data->magic != KHEAP_MAGIC)
+    {
+        kprintf(PURPLE "Bad call to realloc() or heap corruption, rejecting.\n");
+        return NULL;
+    }
+
+    void* new_block = kmalloc(sz);
+    strncpy(new_block, old_block, old_block_data->size);
+    kfree(old_block);
+    return new_block;
 }
