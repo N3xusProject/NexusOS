@@ -30,7 +30,6 @@
 #include <stddef.h>
 
 #define PAGE_ADDR_MASK 0x000FFFFFFFFFF000
-#define GiB 0x40000000UL
 
 struct MappingTable* pml4;
 

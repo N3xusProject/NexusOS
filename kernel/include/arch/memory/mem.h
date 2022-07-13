@@ -27,6 +27,7 @@
 
 #define HIGHER_HALF_DATA	0xFFFF800000000000UL
 #define HIGHER_HALF_CODE	0xFFFFFFFF80000000UL
+#define GiB 0x40000000UL
 
 #define ALIGN_DOWN(address, align)  ((address) & ~((align)-1))
 #define ALIGN_UP(address, align)    (((address) + (align)-1) & ~((align)-1))
