@@ -32,19 +32,68 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define PMM_MAGIC 0xC001CA7
+#define DATA_START(frame) (((char*) frame) + sizeof(struct Frame))
+
+struct Frame 
+{
+    uint8_t is_free : 1;
+    struct Frame* next;
+    uint32_t magic;
+};
+
+static struct Frame* mem_head = NULL;
+static struct Frame* mem_tail = NULL;
+static uint64_t start_addr = 0;
+static uint64_t mem_left = 0;
+
+
 volatile struct limine_memmap_request mmap_req = {
     .id = LIMINE_MEMMAP_REQUEST,
     .revision = 0
 };
 
+static struct Frame* first_fit(void)
+{
+    struct Frame* cur_frame = mem_head;
 
-static void* placement = NULL;
+    while (cur_frame != NULL)
+    {
+        if (cur_frame->is_free)
+        {
+            return cur_frame;
+        }
+
+        cur_frame = cur_frame->next;
+    }
+
+    // No more frames left.
+    return NULL;
+}
 
 void* pmm_alloc(void) 
 {
-    void* ret = placement;
-    placement += PAGE_SIZE;
-    return ret;
+    if (mem_left <= 0)
+    {
+        return NULL;
+    }
+
+    struct Frame* frame = first_fit();
+
+    if (frame == NULL)
+    {
+        char* next = DATA_START(mem_tail + PAGE_SIZE);
+        mem_tail->next = (struct Frame*)next;
+        frame = mem_tail->next;
+        frame->is_free = 0;
+        frame->next = NULL;
+        frame->magic = PMM_MAGIC;
+        mem_tail = frame;
+        mem_left -= PAGE_SIZE;
+    }
+
+    const void* PHYS = (void*)(uint64_t)HIGHER_HALF_DATA_TO_PHYS((uint64_t)ALIGN_UP((uint64_t)frame, PAGE_SIZE));
+    return DATA_START(PHYS);
 }
 
 
@@ -53,6 +102,19 @@ void* pmm_allocz(void)
     void* alloc = pmm_alloc();
     memzero(PHYS_TO_HIGHER_HALF_DATA(alloc), PAGE_SIZE);
     return alloc;
+}
+
+
+void pmm_free(void* frame)
+{
+    struct Frame* cur_frame = mem_head;
+
+    while (cur_frame != NULL && frame != DATA_START(cur_frame))
+    {
+        cur_frame = cur_frame->next;
+    }
+
+    cur_frame->is_free = 1;
 }
 
 void pmm_init(void) 
@@ -86,5 +148,11 @@ void pmm_init(void)
         panic();
     }
 
-    placement = (void*)biggest_segment->base;
+    start_addr = biggest_segment->base;
+    mem_head = (struct Frame*)PHYS_TO_HIGHER_HALF_DATA(start_addr);
+    mem_head->next = NULL;
+    mem_head->is_free = 0;
+    mem_head->magic = PMM_MAGIC;
+    mem_tail = mem_head;
+    mem_left = biggest_segment->length;
 }

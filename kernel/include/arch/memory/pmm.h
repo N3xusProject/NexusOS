@@ -39,4 +39,7 @@ void* pmm_alloc(void);
 // Allocates & zeros frame.
 void* pmm_allocz(void);
 
+// Frees a frame.
+void pmm_free(void* frame);
+
 #endif
