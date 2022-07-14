@@ -89,6 +89,7 @@ void* kmalloc(size_t sz)
     }
 
     struct Block* region = first_fit(sz);
+    vmm_map_page(active_pml4, region, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
 
     if (region == NULL)
     {

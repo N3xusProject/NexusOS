@@ -32,6 +32,7 @@
 #include <intr/intr.h>
 #include <arch/memory/pmm.h>
 #include <arch/memory/vmm.h>
+#include <arch/memory/kheap.h>
 #include <arch/apic/ioapic.h>
 #include <arch/apic/lapic.h>
 #include <firmware/acpi.h>
@@ -65,6 +66,9 @@ static void init(void) {
 
     vmm_init();
     kprintf(KINFO "Virtual Memory Manager initialized.\n");
+
+    kheap_init();
+    kprintf(KINFO "Heap initialized.\n");
 
     acpi_init();
     kprintf(KINFO "ACPI initialized.\n");
