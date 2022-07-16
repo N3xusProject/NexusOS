@@ -53,4 +53,10 @@ uint64_t vmm_get_phys(uint64_t logical);
  */
 struct MappingTable* vmm_mkpml4(void);
 
+/*
+ *  Allocates a page.
+ *
+ */
+void* vmm_alloc_page(uint32_t flags);
+
 #endif

@@ -135,6 +135,16 @@ struct MappingTable* vmm_mkpml4(void)
 void load_pml4(void* pml4_phys);
 
 
+void* vmm_alloc_page(uint32_t flags)
+{
+    uint64_t phys = (uint64_t)pmm_allocz();
+    uint64_t virt = (uint64_t)ALIGN_UP(phys, PAGE_SIZE);
+    void* virt_ptr = (void*)virt;
+    vmm_map_page(active_pml4, virt_ptr, flags);
+    return virt_ptr;
+}
+
+
 void vmm_init(void)
 {
     uint64_t pml4_phys = (uint64_t)pmm_allocz();
