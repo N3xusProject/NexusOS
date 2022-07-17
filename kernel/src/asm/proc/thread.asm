@@ -6,6 +6,7 @@ bits 64
 global switch_thread
 global threading_init
 global current_thread
+global threading_is_init
 
 extern kprintf
 extern vmm_alloc_page
@@ -100,8 +101,8 @@ threading_init:
     call vmm_alloc_page
     mov [syscore], rax
     
-    set_thread_entry syscore, 0, 1              ;; Syscore's TID to 1.
-    set_thread_entry syscore, 1, syscore        ;; Set syscore's next to syscore.
+    set_thread_entry [syscore], 0, 1              ;; Syscore's TID to 1.
+    set_thread_entry [syscore], 1, [syscore]      ;; Set syscore's next to syscore.
 
     ;; Allocate a page for syscore stack.
     mov rdi, 1 << 0 | 1 << 1        ;; PAGE_P_PRESENT | PAGE_RW_WRITABLE
@@ -111,17 +112,19 @@ threading_init:
     ;; Set syscore stack.
     add rbx, PAGE_SIZE
     dec rbx
-    set_thread_entry syscore, 7, rbx
+    set_thread_entry [syscore], 7, rbx
 
     ;; Change stacks.
-    ; mov rsp, rbx
-    ; mov rbp, rbx
+    mov rsp, rbx
+    mov rbp, rbx
 
     ;; Push return location.
-    ; push qword [tmp]
+    push qword [tmp]
 
-    mov rax, syscore
+    mov rax, [syscore]
     mov [current_thread], rax
+
+    mov byte [threading_is_init], 1
 
     retq
 
@@ -130,6 +133,7 @@ msg: db "Thread %d up and running.", 0xA, 0
 current_thread: dq 0
 tmp: dq 0
 syscore: dq 0
+threading_is_init: db 0              ;; 1 if threading is enabled.
 
 ;; Thread structure layout.
 ;; qword tid            ;; Thread ID.
