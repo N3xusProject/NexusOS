@@ -78,11 +78,11 @@ section .data
 panicmsg1: db 0xA, "Panic occured while thread %d was running.", 0xA
 panicmsg2: db "State of thread below:", 0xA
 panicmsg3: db "------------------------------------------", 0xA, 0
-_RAX: db "RAX: %x       ", 0
-_RCX: db "RCX: %x       ", 0xA, 0
+_RAX: db "RAX: %x         ", 0
+_RCX: db "RCX: %x        ", 0xA, 0
 _RDX: db "RDX: %x       ", 0
 _RBX: db "RBX: %x       ", 0xA, 0
-_RSP: db "RSP: %x   ", 0
+_RSP: db "RSP: %x         ", 0
 _RBP: db "RBP: %x       ", 0xA, 0
 _RIP: db "       RIP: %x", 0
 
