@@ -118,49 +118,58 @@ uint64_t vmm_get_phys(uint64_t logical)
     return ((pt->entries[pt_idx] >> 12));
 }
 
-
-struct MappingTable* vmm_mkpml4(void)
-{
-    uint64_t pml4_phys = (uint64_t)pmm_allocz();
-    struct MappingTable* new_pml4 = (struct MappingTable*)pml4_phys;
-
-    for (uint16_t i = 0; i < 512; ++i)
-    {
-        new_pml4->entries[i] = pml4->entries[i];
-    }
-
-    return new_pml4;
-}
-
 void load_pml4(void* pml4_phys);
 
 
-void* vmm_alloc_page(uint32_t flags)
+static void* internal_alloc(uint32_t flags)
 {
     uint64_t phys = (uint64_t)pmm_allocz();
 
-    if (phys == 0)
+    uint64_t tmp = (uint64_t)ALIGN_UP(phys, PAGE_SIZE);
+    void* ret = (void*)tmp;
+    
+    vmm_map_page(pml4, ret, flags);
+    return ret;
+}
+
+void* vmm_alloc_page(uint32_t flags)
+{
+    uint64_t frame = (uint64_t)pmm_allocz();
+    
+    if (frame == 0)
     {
         return NULL;
     }
 
-    uint64_t virt = (uint64_t)ALIGN_UP(phys, PAGE_SIZE);
-    void* virt_ptr = (void*)virt;
-    
-    vmm_map_page(active_pml4, virt_ptr, flags);
-    return virt_ptr;
+    void* page = (void*)(uint64_t)ALIGN_UP(PHYS_TO_HIGHER_HALF_DATA(frame), PAGE_SIZE);
+    vmm_map_page(pml4, page, flags);
+    return page;
 }
+
+struct MappingTable* vmm_mkpml4(void)
+{
+    uint64_t* bootloader_pml4;
+    uint64_t* new_pml4 = internal_alloc(PAGE_P_PRESENT | PAGE_RW_WRITABLE);
+    __asm__ __volatile__("mov %%cr3, %0" : "=r" (bootloader_pml4));
+
+    for (uint16_t i = 0; i < 512; ++i)
+    {
+        new_pml4[i] = bootloader_pml4[i];
+    }
+
+    return (void*)new_pml4;
+}
+
+void load_pml4(void*);
 
 
 void vmm_init(void)
 {
-    uint64_t pml4_phys = (uint64_t)pmm_allocz();
-    pml4 = (void*)pml4_phys;
-
     __asm__ __volatile__("mov %%cr3, %0" : "=r" (pml4));
-    __asm__ __volatile__("mov %0, %%cr3" :: "r" (pml4));
+
+    pml4 = vmm_mkpml4();
+    load_pml4(pml4);
 
     active_pml4 = pml4;
-
     kprintf("<VMM>: Loaded CR3\n");
 }
