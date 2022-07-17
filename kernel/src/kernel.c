@@ -27,6 +27,7 @@
 #include <limine.h>
 #include <libkern/asm.h>
 #include <libkern/log.h>
+#include <libkern/panic.h>
 #include <libkern/driverctl.h>
 #include <libkern/driverinit.h>
 #include <intr/intr.h>
@@ -39,11 +40,20 @@
 #include <drivers/clocks/PIT.h>
 #include <proc/thread.h>
 
+void a();
+void b();
+void c();
+
 static void done(void)
 {
+    CLI;
+    spawn(a);
+    spawn(b);
+    spawn(c);
+    STI;
   	for (;;) 
-    {
-        __asm__("hlt");
+    { 
+        HLT;
     }
 }
 
@@ -82,7 +92,7 @@ __attribute__((noreturn)) static void init(void) {
     kprintf(KINFO "IRQs setup.\n");
 
     init_drivers();
-    kprintf(KINFO "Drivers initialized.\n");
+    kprintf(KINFO "Drivers initialized.\n"); 
 
     threading_init();
     kprintf(KINFO "Threading initialized.\n");
