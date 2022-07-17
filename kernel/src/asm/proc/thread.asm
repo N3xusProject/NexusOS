@@ -43,6 +43,8 @@ switch_thread:
     set_thread_entry current_thread, 9, rsi
     set_thread_entry current_thread, 10, rdi
     set_thread_entry current_thread, 11, [rsp]
+    mov rbx, cr3
+    set_thread_entry current_thread, 12, rbx
 
     ;; Get next thread.
     get_thread_entry current_thread, 1
@@ -71,6 +73,9 @@ switch_thread:
 
     get_thread_entry current_thread, 10
     mov rdi, rax
+
+    get_thread_entry current_thread, 12
+    mov cr3, rax
 
     mov rdi, msg
     call kprintf
@@ -136,3 +141,4 @@ syscore: dq 0
 ;; qword rsi
 ;; qword rdi
 ;; qword rip
+;; qword cr3
