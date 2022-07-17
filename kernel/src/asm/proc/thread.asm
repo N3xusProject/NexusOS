@@ -113,17 +113,24 @@ threading_init:
     add rbx, PAGE_SIZE
     dec rbx
     set_thread_entry [syscore], 7, rbx
+    set_thread_entry [syscore], 8, rbx
 
     ;; Change stacks.
     mov rsp, rbx
     mov rbp, rbx
 
+    ;; Set current thread's RIP to return location.
+    mov rbx, [tmp]
+    set_thread_entry [syscore], 11, rbx
+
     ;; Push return location.
     push qword [tmp]
 
+    ;; Set current thread.
     mov rax, [syscore]
     mov [current_thread], rax
 
+    ;; Set init byte.
     mov byte [threading_is_init], 1
 
     retq
