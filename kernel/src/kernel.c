@@ -37,6 +37,7 @@
 #include <arch/apic/lapic.h>
 #include <firmware/acpi.h>
 #include <drivers/clocks/PIT.h>
+#include <proc/thread.h>
 
 static void done(void)
 {
@@ -52,12 +53,10 @@ static void init_drivers(void)
     init_hdd();
     pit_set_phase(DEFAULT_TIMER_PHASE);
     kprintf("PIT phase set at %d Hz\n", DEFAULT_TIMER_PHASE);
-    __asm__ __volatile__("sti");
 }
 
 
-static void init(void) {
-    __asm__ __volatile__("cli");
+__attribute__((noreturn)) static void init(void) {
     intr_init();
     kprintf(KINFO "Interrupts initialized.\n");
 
@@ -84,6 +83,17 @@ static void init(void) {
 
     init_drivers();
     kprintf(KINFO "Drivers initialized.\n");
+
+    threading_init();
+    kprintf(KINFO "Threading initialized.\n");
+
+    STI;
+
+    // We may not return because threading_init()
+    // changed stacks and returning would result
+    // in an invalid opcode exception or something.
+    done();
+    while (1);
 }
 
 // The following will be our kernel's entry point.
@@ -94,6 +104,4 @@ void _start(void)
     kprintf("%s%s\n\n", BOLD_YELLOW, ascii_art);
 
     init();
-
-    done();
 }

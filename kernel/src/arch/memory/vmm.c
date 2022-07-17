@@ -153,7 +153,7 @@ void vmm_init(void)
     __asm__ __volatile__("mov %%cr3, %0" : "=r" (pml4));
     __asm__ __volatile__("mov %0, %%cr3" :: "r" (pml4));
 
-    vmm_map_page(pml4, 0, PAGE_P_PRESENT);
+    vmm_unmap_page(pml4, 0);
     active_pml4 = pml4;
 
     kprintf("<VMM>: Loaded CR3\n");

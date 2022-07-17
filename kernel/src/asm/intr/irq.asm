@@ -7,6 +7,7 @@ global pit_ticks
 
 extern lapic_send_eoi
 extern kprintf
+extern switch_thread
 
 %macro _pushall 0
     push rax
@@ -48,12 +49,9 @@ extern kprintf
 
 irq0:
     cli
-    _pushall
     inc word [pit_ticks]
     call lapic_send_eoi
-    _popall
-    sti
-    iretq
+    jmp switch_thread
 
 section .data
 pit_ticks: dw 0
