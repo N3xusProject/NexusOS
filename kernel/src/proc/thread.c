@@ -24,5 +24,37 @@
 
 #include <proc/thread.h>
 #include <arch/memory/vmm.h>
+#include <arch/memory/mem.h>
 #include <libkern/asm.h>
 #include <libkern/log.h>
+#include <libkern/panic.h>
+
+#define THREAD_ACTIVE 0
+#define THREAD_INACTIVE 1
+#define THREAD_KILLED 2
+
+extern volatile struct Thread* current_thread;
+extern volatile struct Thread* syscore;
+
+
+__attribute__((naked)) void exit(TEXIT_REASON errno)
+{
+    CLI;
+
+    if (current_thread->tid == 1)
+    {
+        kprintf(KERN_PANIC "Critical system process terminated: syscore\n");
+        panic();
+    }
+        
+    current_thread->state = THREAD_KILLED;
+    current_thread->rax = errno;
+
+    // Wait until thread switch.
+    __asm__ __volatile__(
+            "sti;       \
+            wait:       \
+                nop;    \
+                jmp wait");
+}
+

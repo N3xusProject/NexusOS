@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 typedef uint64_t TID;
+typedef uint16_t TEXIT_REASON;
 
 struct __attribute__((packed)) Thread
 {
@@ -49,5 +50,21 @@ struct __attribute__((packed)) Thread
 
 void threading_init(void);
 
+/*
+ *  @brief: Puts the current thread into a killed state.
+ *          whenever ANY process get's killed, a return code
+ *          is stored in the thread's RAX.
+ *
+ */
+__attribute__((naked)) void exit(TEXIT_REASON errno);
+
+/*
+ *  @brief      Spawns a new thread.
+ *
+ *  @param where        Location for thread to start executing.
+ *
+ */
+
+TID spawn(void* where);
 
 #endif
