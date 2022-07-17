@@ -5,15 +5,15 @@ bits 64
 
 global switch_thread
 global threading_init
+global current_thread
 
-extern current_thread
 extern kprintf
 extern vmm_alloc_page
 
 %define PAGE_SIZE 0x1000
 
 ;; To get TID do this:
-;; get_thread_entry thread, 0
+;; get_thread_entry [thread], 0
 ;; arg 1 is thread pointer.
 ;; arg 2 is index.
 ;; 8 bytes per inex.
@@ -28,60 +28,63 @@ extern vmm_alloc_page
 %macro set_thread_entry 3
     mov rax, %1
     add rax, 8*%2
-    mov rbx, %3
-    mov [rax], rbx
+    mov rdx, %3
+    mov [rax], rdx
 %endmacro
 
 switch_thread:
     ;; Save current threads state.
-    set_thread_entry current_thread, 3, rax
-    set_thread_entry current_thread, 4, rcx
-    set_thread_entry current_thread, 5, rdx
-    set_thread_entry current_thread, 6, rbx
-    set_thread_entry current_thread, 7, rsp
-    set_thread_entry current_thread, 8, rbp
-    set_thread_entry current_thread, 9, rsi
-    set_thread_entry current_thread, 10, rdi
-    set_thread_entry current_thread, 11, [rsp]
+    set_thread_entry [current_thread], 3, rax
+    set_thread_entry [current_thread], 4, rcx
+    set_thread_entry [current_thread], 5, rdx
+    set_thread_entry [current_thread], 6, rbx
+    set_thread_entry [current_thread], 7, rsp
+    set_thread_entry [current_thread], 8, rbp
+    set_thread_entry [current_thread], 9, rsi
+    set_thread_entry [current_thread], 10, rdi
+    set_thread_entry [current_thread], 11, [rsp]
     mov rbx, cr3
-    set_thread_entry current_thread, 12, rbx
+    set_thread_entry [current_thread], 12, rbx
 
     ;; Get next thread.
-    get_thread_entry current_thread, 1
+    get_thread_entry [current_thread], 1
     mov [current_thread], rax
 
     ;; Load thread's state.
-    get_thread_entry current_thread, 3          ;; Puts value of thread's RAX into RAX.
+    get_thread_entry [current_thread], 3          ;; Puts value of thread's RAX into RAX.
 
-    get_thread_entry current_thread, 4
+    get_thread_entry [current_thread], 4
     mov rcx, rax
 
-    get_thread_entry current_thread, 5
+    get_thread_entry [current_thread], 5
     mov rdx, rax
 
-    get_thread_entry current_thread, 6
+    get_thread_entry [current_thread], 6
     mov rbx, rax
 
-    get_thread_entry current_thread, 7
+    get_thread_entry [current_thread], 7
     mov rsp, rax
 
-    get_thread_entry current_thread, 8
+    get_thread_entry [current_thread], 8
     mov rbp, rax
 
-    get_thread_entry current_thread, 9
+    get_thread_entry [current_thread], 9
     mov rsi, rax
 
-    get_thread_entry current_thread, 10
+    get_thread_entry [current_thread], 10
     mov rdi, rax
 
-    get_thread_entry current_thread, 12
+    get_thread_entry [current_thread], 12
     mov cr3, rax
 
+    get_thread_entry [current_thread], 0
+
     mov rdi, msg
+    mov rsi, rax
     call kprintf
 
     mov [rsp - 3], rsp          ;; Set IRET stackframe RSP.
-    get_thread_entry current_thread, 11
+    get_thread_entry [current_thread], 11
     mov [rsp], rax              ;; Set IRET stackframe RIP.
     
     sti
@@ -111,11 +114,11 @@ threading_init:
     set_thread_entry syscore, 7, rbx
 
     ;; Change stacks.
-    mov rsp, rbx
-    mov rbp, rbx
+    ; mov rsp, rbx
+    ; mov rbp, rbx
 
     ;; Push return location.
-    push qword [tmp]
+    ; push qword [tmp]
 
     mov rax, syscore
     mov [current_thread], rax
@@ -123,7 +126,7 @@ threading_init:
     retq
 
 section .data
-msg: db "Main thread up and running.", 0xA, 0
+msg: db "Thread %d up and running.", 0xA, 0
 current_thread: dq 0
 tmp: dq 0
 syscore: dq 0
