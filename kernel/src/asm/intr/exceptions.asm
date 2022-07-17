@@ -21,21 +21,17 @@ global page_fault
 extern kprintf
 extern write_panic_msg
 extern hex2str
+extern panic
 
 %macro e_panic 1
     cli
     call write_panic_msg
 
     mov rdi, panic_msg
+    mov rsi, %1
     call kprintf
 
-    mov rdi, %1
-    call hex2str
-
-    mov rdi, rax
-    call kprintf
-
-    hlt
+    call panic
 %endmacro
 
 divide_error:
@@ -74,4 +70,4 @@ general_protection_fault:
 page_fault:
     e_panic 0xE
 
-panic_msg: db "VECTOR FIRED: ", 0
+panic_msg: db "VECTOR FIRED: %x", 0xA, 0
