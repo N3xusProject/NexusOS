@@ -173,3 +173,4 @@ void vmm_init(void)
     active_pml4 = pml4;
     kprintf("<VMM>: Loaded CR3\n");
 }
+
