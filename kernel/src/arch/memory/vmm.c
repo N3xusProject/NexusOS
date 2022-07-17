@@ -132,45 +132,54 @@ static void* internal_alloc(uint32_t flags)
     return ret;
 }
 
-void* vmm_alloc_page(uint32_t flags)
+void* vmm_alloc_page(void)
 {
-    uint64_t frame = (uint64_t)pmm_allocz();
-    
+    uint64_t frame = (uint64_t)pmm_alloc(); 
+
     if (frame == 0)
     {
         return NULL;
     }
 
-    void* page = (void*)(uint64_t)ALIGN_UP(PHYS_TO_HIGHER_HALF_DATA(frame), PAGE_SIZE);
-    vmm_map_page(pml4, page, flags);
-    return page;
+    return (void*)(uint64_t)PHYS_TO_HIGHER_HALF_DATA(ALIGN_UP(frame, PAGE_SIZE));
 }
 
-struct MappingTable* vmm_mkpml4(void)
+uint64_t* vmm_mkpml4(void)
 {
-    uint64_t* bootloader_pml4;
-    uint64_t* new_pml4 = internal_alloc(PAGE_P_PRESENT | PAGE_RW_WRITABLE);
-    __asm__ __volatile__("mov %%cr3, %0" : "=r" (bootloader_pml4));
 
+    uint64_t* new_pml4 = internal_alloc(PAGE_P_PRESENT | PAGE_RW_WRITABLE);
     for (uint16_t i = 0; i < 512; ++i)
     {
-        new_pml4[i] = bootloader_pml4[i];
+        new_pml4[i] = pml4->entries[i];
     }
 
-    return (void*)new_pml4;
+    return new_pml4;
 }
 
 void load_pml4(void*);
 
 
-void vmm_init(void)
+static void setup_base_pml4(void)
 {
     __asm__ __volatile__("mov %%cr3, %0" : "=r" (pml4));
 
-    pml4 = vmm_mkpml4();
-    load_pml4(pml4);
+    uint64_t* bootloader_pml4;
+    pml4 = internal_alloc(PAGE_P_PRESENT | PAGE_RW_WRITABLE);
 
+    __asm__ __volatile__("mov %%cr3, %0" : "=r" (bootloader_pml4));
+
+    for (uint16_t i = 0; i < 512; ++i)
+    {
+        pml4->entries[i] = bootloader_pml4[i];
+    }
+}
+
+
+void vmm_init(void)
+{ 
+    setup_base_pml4();
+    load_pml4(pml4);
     active_pml4 = pml4;
-    kprintf("<VMM>: Loaded CR3\n");
+    kprintf("<VMM>: Loaded CR3\n"); 
 }
 

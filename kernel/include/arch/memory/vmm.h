@@ -51,12 +51,12 @@ uint64_t vmm_get_phys(uint64_t logical);
  *  To destroy a PML4, just call pmm_free on it.
  *
  */
-struct MappingTable* vmm_mkpml4(void);
+uint64_t* vmm_mkpml4(void);
 
 /*
  *  Allocates a page.
  *
  */
-void* vmm_alloc_page(uint32_t flags);
+void* vmm_alloc_page(void);
 
 #endif
