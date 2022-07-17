@@ -138,8 +138,15 @@ void load_pml4(void* pml4_phys);
 void* vmm_alloc_page(uint32_t flags)
 {
     uint64_t phys = (uint64_t)pmm_allocz();
+
+    if (phys == 0)
+    {
+        return NULL;
+    }
+
     uint64_t virt = (uint64_t)ALIGN_UP(phys, PAGE_SIZE);
     void* virt_ptr = (void*)virt;
+    
     vmm_map_page(active_pml4, virt_ptr, flags);
     return virt_ptr;
 }
@@ -153,7 +160,6 @@ void vmm_init(void)
     __asm__ __volatile__("mov %%cr3, %0" : "=r" (pml4));
     __asm__ __volatile__("mov %0, %%cr3" :: "r" (pml4));
 
-    vmm_unmap_page(pml4, 0);
     active_pml4 = pml4;
 
     kprintf("<VMM>: Loaded CR3\n");
