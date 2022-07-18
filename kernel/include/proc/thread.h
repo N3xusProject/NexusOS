@@ -52,7 +52,7 @@ __attribute__((naked)) void threading_init(void);
 
 /*
  *  @brief: Puts the current thread into a killed state.
- *          whenever ANY process get's killed, a return code
+ *          whenever ANY process gets killed, a return code
  *          is stored in the thread's RAX.
  *
  */
