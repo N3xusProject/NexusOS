@@ -39,6 +39,7 @@ struct Thread* current_thread;
 struct Thread* syscore;
 struct Thread* head_thread;
 static uint64_t rip = 0;
+uint8_t threading_is_init = 0;             // > 0 if threading is enabled.
 
 void load_pml4(void*);
 
@@ -68,7 +69,7 @@ __attribute__((naked)) void exit(TEXIT_REASON errno)
 
 __attribute__((naked)) void threading_init(void)
 {  
-    
+    threading_is_init = 1; 
     // -- Load new address space --
     void* new_vaddrsp = vmm_mkpml4();
     load_pml4(new_vaddrsp);

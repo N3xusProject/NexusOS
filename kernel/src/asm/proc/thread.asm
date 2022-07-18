@@ -4,7 +4,6 @@
 bits 64
 
 global switch_thread
-global threading_is_init
 global spawn
 
 extern kprintf
@@ -199,7 +198,6 @@ spawn:
         retq
 
 section .data
-threading_is_init: db 0              ;; 1 if threading is enabled.
 tmp: dq 0
 
 ;; Thread structure layout.
