@@ -63,9 +63,15 @@ switch_thread:
     mov rax, cr3
     set_thread_val_idx [current_thread], 12, rax
 
-    ;; Get next thread.
-    get_thread_get_idx [current_thread], 1
-    mov [current_thread], rax
+    ;; Get next thread and ensure it is not in
+    ;; a killed state.
+    .find_non_killed:
+        nop
+        get_thread_get_idx [current_thread], 1
+        mov [current_thread], rax
+        get_thread_get_idx [current_thread], 2
+        cmp rax, THREAD_KILLED
+        je .find_non_killed
 
     ;; Set this thread as active.
     set_thread_val_idx [current_thread], 2, THREAD_ACTIVE
@@ -112,13 +118,39 @@ spawn:
     ;; Save "where" param.
     push rdi
 
+    ;; We want to check if there is a killed thread
+    ;; that we can reclaim so we don't have to allocate
+    ;; a new one.
+
+    mov rax, [syscore]
+    mov [tmp], rax
+
+    .find_killed:
+        get_thread_get_idx [tmp], 1
+        mov [tmp], rax
+
+        ;; Are we back at syscore?
+        ;; if so, we made a full
+        ;; trip around the linked list
+        ;; and found no killed threads.
+        ;; Thus we must allocate a new thread.
+        mov rax, [syscore]
+        cmp [tmp], rax
+        je .alloc_thread
+
+        get_thread_get_idx [tmp], 2
+        cmp rax, THREAD_KILLED
+        je .setup_thread
+
     ;; Allocate a page for a thread control block.
+    .alloc_thread:
     call vmm_alloc_page
     mov [tmp], rax
     cmp rax, 0
     je .err
 
     ;; Set TID as head_thread.TID + 1.
+    .setup_thread:
     get_thread_get_idx [head_thread], 0
     inc rax
     set_thread_val_idx [tmp], 0, rax
