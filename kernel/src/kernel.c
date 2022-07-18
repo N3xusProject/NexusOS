@@ -40,13 +40,20 @@
 #include <drivers/clocks/PIT.h>
 #include <proc/thread.h>
 
+static int abc = 0;
 
 static void a(void)
 {
     while (1)
     {
         CLI;
-        kprintf("A\n");
+        kprintf("HELLO WORLD, I AM THREAD A!\n");
+
+        if (abc++ >= 50)
+        {
+            exit(1);
+        }
+
         STI;
         HLT;
     }
@@ -57,7 +64,7 @@ static void b(void)
     while (1)
     {
         CLI;
-        kprintf("B\n");
+        kprintf("I AM THREAD B!\n");
         STI;
         HLT;
     }
