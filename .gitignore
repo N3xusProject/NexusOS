@@ -2,5 +2,5 @@
 limine/
 logfile.txt
 *.d
-*.elf
+*.sys
 *.o
