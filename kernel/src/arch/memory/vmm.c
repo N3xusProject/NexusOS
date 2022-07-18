@@ -30,10 +30,8 @@
 #include <limine.h>
 #include <stddef.h>
 
-#define PAGE_ADDR_MASK 0x000FFFFFFFFFF000
-
-struct MappingTable* pml4;
-struct MappingTable* active_pml4 = NULL;
+uint64_t* pml4;
+uint64_t* active_pml4;
 
 static void invlpg(void* addr)
 {
@@ -41,7 +39,7 @@ static void invlpg(void* addr)
     __asm__ __volatile__("invlpg (%0)" : : "r" (addr));
 }
 
-void vmm_map_page(struct MappingTable* _pml4, void* logical, uint32_t flags)
+void vmm_map_page(uint64_t* _pml4, void* logical, uint32_t flags)
 {
     // Ensure one of the flags is PAGE_P_PRESENT.
     flags |= PAGE_P_PRESENT;
@@ -52,30 +50,30 @@ void vmm_map_page(struct MappingTable* _pml4, void* logical, uint32_t flags)
     int pd_idx = (addr >> 21) & 0x1FF;
     int pt_idx = (addr >> 12) & 0x1FF;
 
-    if (!(_pml4->entries[pml4_idx] & PAGE_P_PRESENT))
+    if (!(_pml4[pml4_idx] & PAGE_P_PRESENT))
     {
-        _pml4->entries[pml4_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
+        _pml4[pml4_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
     }
 
-    struct MappingTable* pdpt = (struct MappingTable*)(_pml4->entries[pml4_idx] & PAGE_ADDR_MASK);
+    uint64_t* pdpt = (uint64_t*)(_pml4[pml4_idx] & PAGE_ADDR_MASK);
 
-    if (!(pdpt->entries[pdpt_idx] & PAGE_P_PRESENT))
+    if (!(pdpt[pdpt_idx] & PAGE_P_PRESENT))
     {
-        pdpt->entries[pdpt_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
+        pdpt[pdpt_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
     }
 
-    struct MappingTable* pd = (struct MappingTable*)(pdpt->entries[pdpt_idx] & PAGE_ADDR_MASK);
+    uint64_t* pd = (uint64_t*)(pdpt[pdpt_idx] & PAGE_ADDR_MASK);
 
-    if (!(pd->entries[pd_idx] & PAGE_P_PRESENT))
+    if (!(pd[pd_idx] & PAGE_P_PRESENT))
     {
-        pd->entries[pd_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
+        pd[pd_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
     }
 
-    struct MappingTable* pt = (struct MappingTable*)(pd->entries[pd_idx] & PAGE_ADDR_MASK);
+    uint64_t* pt = (uint64_t*)(pd[pd_idx] & PAGE_ADDR_MASK);
 
-    if (!(pt->entries[pt_idx] & PAGE_ADDR_MASK))
+    if (!(pt[pt_idx] & PAGE_ADDR_MASK))
     {
-        pt->entries[pt_idx] = (addr & PAGE_ADDR_MASK) | flags;
+        pt[pt_idx] = (addr & PAGE_ADDR_MASK) | flags;
     }
 
     invlpg((void*)(uint64_t)ALIGN_DOWN((uint64_t)logical, PAGE_SIZE));
@@ -83,7 +81,7 @@ void vmm_map_page(struct MappingTable* _pml4, void* logical, uint32_t flags)
 }
 
 
-void vmm_unmap_page(struct MappingTable* pml4, void* logical)
+void vmm_unmap_page(uint64_t* pml4, void* logical)
 {
     uint64_t addr = (uint64_t)ALIGN_DOWN((uint64_t)logical, PAGE_SIZE);
 
@@ -92,30 +90,13 @@ void vmm_unmap_page(struct MappingTable* pml4, void* logical)
     int pd_idx = (addr >> 21) & 0x1FF;
     int pt_idx = (addr >> 12) & 0x1FF;
 
-    struct MappingTable* pdpt = (struct MappingTable*)(pml4->entries[pml4_idx] & PAGE_ADDR_MASK);
-    struct MappingTable* pd = (struct MappingTable*)(pdpt->entries[pdpt_idx] & PAGE_ADDR_MASK);
-    struct MappingTable* pt = (struct MappingTable*)(pd->entries[pd_idx] & PAGE_ADDR_MASK);
+    uint64_t* pdpt = (uint64_t*)(pml4[pml4_idx] & PAGE_ADDR_MASK);
+    uint64_t* pd = (uint64_t*)(pdpt[pdpt_idx] & PAGE_ADDR_MASK);
+    uint64_t* pt = (uint64_t*)(pd[pd_idx] & PAGE_ADDR_MASK);
 
-    pt->entries[pt_idx] = 0;
+    pt[pt_idx] = 0;
     invlpg((void*)logical);
     __asm__ __volatile__("mov %0, %%cr3" :: "r" (pml4));
-}
-
-
-uint64_t vmm_get_phys(uint64_t logical)
-{
-    uint64_t addr = (uint64_t)ALIGN_DOWN((uint64_t)logical, PAGE_SIZE);
-
-    int pml4_idx = (addr >> 39) & 0x1FF;
-    int pdpt_idx = (addr >> 30) & 0x1FF;
-    int pd_idx = (addr >> 21) & 0x1FF;
-    int pt_idx = (addr >> 12) & 0x1FF;
-
-    struct MappingTable* pdpt = (struct MappingTable*)(pml4->entries[pml4_idx] & PAGE_ADDR_MASK);
-    struct MappingTable* pd = (struct MappingTable*)(pdpt->entries[pdpt_idx] & PAGE_ADDR_MASK);
-    struct MappingTable* pt = (struct MappingTable*)(pd->entries[pd_idx] & PAGE_ADDR_MASK);
-
-    return ((pt->entries[pt_idx] >> 12));
 }
 
 void load_pml4(void* pml4_phys);
@@ -132,6 +113,13 @@ static void* internal_alloc(uint32_t flags)
     return ret;
 }
 
+static uint64_t* read_cr3(void)
+{
+    static uint64_t data;
+    __asm__ __volatile__("mov %%cr3, %0" : "=r" (data));
+    return (uint64_t*)(uint64_t)PHYS_TO_HIGHER_HALF_DATA(data);
+}
+
 void* vmm_alloc_page(void)
 {
     uint64_t frame = (uint64_t)pmm_alloc(); 
@@ -141,43 +129,30 @@ void* vmm_alloc_page(void)
         return NULL;
     }
 
-    return (void*)(uint64_t)PHYS_TO_HIGHER_HALF_DATA(ALIGN_UP(frame, PAGE_SIZE));
+    return (void*)((uint64_t)frame & PAGE_ADDR_MASK);
 }
 
 uint64_t* vmm_mkpml4(void)
 {
 
-    uint64_t* new_pml4 = internal_alloc(PAGE_P_PRESENT | PAGE_RW_WRITABLE);
+    uint64_t* new_pml4 = vmm_alloc_page();
+    uint64_t* boot_pml4 = read_cr3();
+
     for (uint16_t i = 0; i < 512; ++i)
     {
-        new_pml4[i] = pml4->entries[i];
+        new_pml4[i] = boot_pml4[i];
     }
 
-    return new_pml4;
+    return (void*)((uint64_t)new_pml4 & PAGE_ADDR_MASK);
 }
 
 void load_pml4(void*);
 
 
-static void setup_base_pml4(void)
-{
-    __asm__ __volatile__("mov %%cr3, %0" : "=r" (pml4));
-
-    uint64_t* bootloader_pml4;
-    pml4 = internal_alloc(PAGE_P_PRESENT | PAGE_RW_WRITABLE);
-
-    __asm__ __volatile__("mov %%cr3, %0" : "=r" (bootloader_pml4));
-
-    for (uint16_t i = 0; i < 512; ++i)
-    {
-        pml4->entries[i] = bootloader_pml4[i];
-    }
-}
-
-
 void vmm_init(void)
 { 
-    setup_base_pml4();
+    __asm__ __volatile__("mov %%cr3, %0" : "=r" (pml4));
+    pml4 = vmm_mkpml4();
     load_pml4(pml4);
     active_pml4 = pml4;
     kprintf("<VMM>: Loaded CR3\n"); 

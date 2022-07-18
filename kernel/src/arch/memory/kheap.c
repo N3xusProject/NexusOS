@@ -48,7 +48,7 @@ static struct Block* mem_tail = NULL;
 static size_t bytes_allocated = 0;
 
 
-extern struct MappingTable* active_pml4;
+extern uint64_t* active_pml4;
 
 
 void kheap_init(void) 
