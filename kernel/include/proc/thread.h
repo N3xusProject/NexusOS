@@ -63,7 +63,7 @@ __attribute__((naked)) void exit(TEXIT_REASON errno);
  *
  *  @param where        Location for thread to start executing.
  *
- *  @returns            TID of new thread.
+ *  @returns            TID of new thread, zero if error (i.e no mem left).
  */
 
 TID spawn(void* where);

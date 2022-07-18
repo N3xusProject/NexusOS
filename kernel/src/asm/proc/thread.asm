@@ -115,6 +115,8 @@ spawn:
     ;; Allocate a page for a thread control block.
     call vmm_alloc_page
     mov [tmp], rax
+    cmp rax, 0
+    je .err
 
     ;; Set TID as head_thread.TID + 1.
     get_thread_get_idx [head_thread], 0
@@ -131,6 +133,8 @@ spawn:
     ;; Allocate a stack for our new thread.
     mov rdi, STACK_SIZE
     call kmalloc
+    cmp rax, 0
+    jz .err
 
     add rax, STACK_SIZE
     dec rax
@@ -156,6 +160,11 @@ spawn:
 
     sti
     retq
+
+    .err:
+        mov rax, 0
+        sti
+        retq
 
 section .data
 threading_is_init: db 0              ;; 1 if threading is enabled.
