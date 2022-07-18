@@ -40,42 +40,9 @@
 #include <drivers/clocks/PIT.h>
 #include <proc/thread.h>
 
-static int abc = 0;
-
-static void a(void)
-{
-    while (1)
-    {
-        CLI;
-        kprintf("HELLO WORLD, I AM THREAD A!\n");
-
-        if (abc++ >= 50)
-        {
-            exit(1);
-        }
-
-        STI;
-        HLT;
-    }
-}
-
-static void b(void)
-{
-    while (1)
-    {
-        CLI;
-        kprintf("I AM THREAD B!\n");
-        STI;
-        HLT;
-    }
-}
-
 
 static void done(void)
 {
-    CLI;
-    spawn(a);
-    spawn(b);
     STI;
   	for (;;) 
     {
