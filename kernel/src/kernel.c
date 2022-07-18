@@ -40,19 +40,38 @@
 #include <drivers/clocks/PIT.h>
 #include <proc/thread.h>
 
-void a();
-void b();
-void c();
+
+static void a(void)
+{
+    while (1)
+    {
+        CLI;
+        kprintf("A\n");
+        STI;
+        HLT;
+    }
+}
+
+static void b(void)
+{
+    while (1)
+    {
+        CLI;
+        kprintf("B\n");
+        STI;
+        HLT;
+    }
+}
+
 
 static void done(void)
 {
     CLI;
     spawn(a);
     spawn(b);
-    spawn(c);
     STI;
   	for (;;) 
-    { 
+    {
         HLT;
     }
 }
@@ -94,15 +113,13 @@ __attribute__((noreturn)) static void init(void) {
     init_drivers();
     kprintf(KINFO "Drivers initialized.\n"); 
 
-    threading_init();
+    threading_init(); 
     kprintf(KINFO "Threading initialized.\n");
-
-    STI;
+    done();
 
     // We may not return because threading_init()
     // changed stacks and returning would result
     // in an invalid opcode exception or something.
-    done();
     while (1);
 }
 

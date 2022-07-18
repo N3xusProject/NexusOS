@@ -24,6 +24,7 @@
 
 #include <proc/thread.h>
 #include <arch/memory/vmm.h>
+#include <arch/memory/kheap.h>
 #include <arch/memory/mem.h>
 #include <libkern/asm.h>
 #include <libkern/log.h>
@@ -32,9 +33,14 @@
 #define THREAD_ACTIVE 0
 #define THREAD_INACTIVE 1
 #define THREAD_KILLED 2
+#define STACK_SIZE 0x1000*3
 
-extern volatile struct Thread* current_thread;
-extern volatile struct Thread* syscore;
+struct Thread* current_thread;
+struct Thread* syscore;
+struct Thread* head_thread;
+static uint64_t rip = 0;
+
+void load_pml4(void*);
 
 
 __attribute__((naked)) void exit(TEXIT_REASON errno)
@@ -58,3 +64,42 @@ __attribute__((naked)) void exit(TEXIT_REASON errno)
                 jmp wait");
 }
 
+
+
+__attribute__((naked)) void threading_init(void)
+{  
+    
+    // -- Load new address space --
+    void* new_vaddrsp = vmm_mkpml4();
+    load_pml4(new_vaddrsp);
+
+    syscore = vmm_alloc_page();
+    current_thread = syscore;
+    head_thread = syscore;
+
+    syscore->tid = 1;
+    syscore->next = syscore;
+    syscore->state = THREAD_ACTIVE;
+    syscore->rsp = (uint64_t)kmalloc(STACK_SIZE);
+
+    syscore->rsp += STACK_SIZE - 1;
+    syscore->rbp = syscore->rsp;
+
+    // -- Fetch instruction pointer --
+    __asm__ __volatile__(
+            "\
+            movq (%%rsp), %%rax; \
+            movq %%rax, %0" : "=r" (rip));
+
+    // -- Setup new stack --
+    __asm__ __volatile__(
+            "\
+            movq %0, %%rsp; \
+            movq %0, %%rbp;" :: "r" (syscore->rsp));
+
+
+    syscore->rip = rip;
+    
+    vmm_map_page(new_vaddrsp, (void*)rip,  PAGE_P_PRESENT | PAGE_RW_WRITABLE);
+    __asm__ __volatile__("movq %0, (%%rsp); retq" :: "r" (rip));
+}

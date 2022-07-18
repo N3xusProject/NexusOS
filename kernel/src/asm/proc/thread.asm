@@ -4,254 +4,162 @@
 bits 64
 
 global switch_thread
-global threading_init
-global current_thread
 global threading_is_init
-global syscore
-global get_rip
 global spawn
-global a
-global b
-global c
 
 extern kprintf
+extern current_thread
+extern head_thread
+extern syscore
 extern vmm_alloc_page
 extern kmalloc
 extern vmm_mkpml4
 
 %define PAGE_SIZE 0x1000
 %define STACK_SIZE 0x1000*3
+
 %define THREAD_ACTIVE 0
 %define THREAD_INACTIVE 1
 %define THREAD_KILLED 2
 
-;; To get TID do this:
-;; get_thread_entry [thread], 0
-;; arg 1 is thread pointer.
-;; arg 2 is index.
-;; 8 bytes per inex.
-%macro get_thread_entry 2
-    mov rax, %1
-    add rax, 8*%2
-    mov rax, [rax]
+;; Set a value in the thread struct
+;; at a certain index. (8 bytes per index).
+;;
+;; arg 1: thread.
+;; arg 2: index.
+;; arg 3: value.
+%macro set_thread_val_idx 3
+    mov r11, %1
+    add r11, 8*%2
+    mov qword [r11], %3
 %endmacro
 
-;; Same as above but 3rd arg 
-;; is value to set.
-%macro set_thread_entry 3
-    mov rax, %1
-    add rax, 8*%2
-    mov rdx, %3
-    mov [rax], rdx
+;; Same as above except there is no third argument 
+;; and a value is returned in RAX.
+%macro get_thread_get_idx 2
+    mov r11, %1
+    add r11, 8*%2
+    mov rax, [r11]
 %endmacro
-
-get_rip:
-    pop rax
-    jmp rax
 
 switch_thread:
-    ;; Save current threads state.
-    set_thread_entry [current_thread], 3, rax
-    set_thread_entry [current_thread], 4, rcx
-    set_thread_entry [current_thread], 5, rdx
-    set_thread_entry [current_thread], 6, rbx
-    set_thread_entry [current_thread], 7, rsp
-    set_thread_entry [current_thread], 8, rbp
-    set_thread_entry [current_thread], 9, rsi
-    set_thread_entry [current_thread], 10, rdi
-    set_thread_entry [current_thread], 11, [rsp]
-    set_thread_entry [current_thread], 12, cr3
-
-    ;; Set current thread to inactive.
-    set_thread_entry [current_thread], 2, THREAD_INACTIVE
-
-    ;; Get next thread.
-    .get_next_thread:
-        get_thread_entry [current_thread], 1
-        mov [current_thread], rax
-        get_thread_entry [current_thread], 2
-        cmp rax, THREAD_KILLED
-        je .get_next_thread
-
-    ;; Set current thread to active.
-    set_thread_entry [current_thread], 2, THREAD_ACTIVE
-
-    ;; Load thread's state.
-    get_thread_entry [current_thread], 3          ;; Puts value of thread's RAX into RAX.
-
-    get_thread_entry [current_thread], 4
-    mov rcx, rax
-
-    get_thread_entry [current_thread], 5
-    mov rdx, rax
-
-    get_thread_entry [current_thread], 6
-    mov rbx, rax
-
-    get_thread_entry [current_thread], 12
-    mov cr3, rax
-
-    get_thread_entry [current_thread], 7
-    mov rsp, rax
-
-    get_thread_entry [current_thread], 8
-    mov rbp, rax
-
-    get_thread_entry [current_thread], 9
-    mov rsi, rax
-
-    get_thread_entry [current_thread], 10
-    mov rdi, rax
-
-    get_thread_entry [current_thread], 0
-
-    mov rdi, msg
-    mov rsi, rax
-    call kprintf
-    
-    ;; Get rid of IRET stack frame.
-    times 5 pop rax
-
-    ;; Set return location.
-    get_thread_entry [current_thread], 11
-    mov [rsp], rax
-    
-    sti
-    retq
-
-threading_init:
-    ;; Save return location.
+    cli
+    ;; Save thread state.
+    ;; Save RIP.
     mov rax, [rsp]
     mov [tmp], rax
 
-    ;; Allocate a page for syscore.
-    mov rdi, 1 << 0 | 1 << 1        ;; PAGE_P_PRESENT | PAGE_RW_WRITABLE
-    call vmm_alloc_page
-    mov [syscore], rax
-    
-    set_thread_entry [syscore], 0, 1              ;; Syscore's TID to 1.
-    set_thread_entry [syscore], 1, [syscore]      ;; Set syscore's next to syscore.
+    set_thread_val_idx [current_thread], 2, THREAD_INACTIVE
+    set_thread_val_idx [current_thread], 3, rax
+    set_thread_val_idx [current_thread], 4, rcx
+    set_thread_val_idx [current_thread], 5, rdx
+    set_thread_val_idx [current_thread], 6, rbx
+    set_thread_val_idx [current_thread], 7, rsp
+    set_thread_val_idx [current_thread], 8, rbp
+    set_thread_val_idx [current_thread], 9, rsi
+    set_thread_val_idx [current_thread], 10, rdi
+    mov rax, [tmp]
+    set_thread_val_idx [current_thread], 11, rax
+    mov rax, cr3
+    set_thread_val_idx [current_thread], 12, rax
 
-    ;; Allocate a page for syscore stack.
-    ; mov rdi, 1 << 0 | 1 << 1        ;; PAGE_P_PRESENT | PAGE_RW_WRITABLE
-    ; call vmm_alloc_page
-    ; mov rbx, rax
-
-    mov rdi, STACK_SIZE
-    call kmalloc
-    mov rbx, rax
-
-    ;; Set syscore stack.
-    add rbx, STACK_SIZE
-    dec rbx
-    set_thread_entry [syscore], 7, rbx
-    set_thread_entry [syscore], 8, rbx
-
-    ;; Change stacks.
-    mov rsp, rbx
-    mov rbp, rbx
-
-    ;; Set current thread's RIP to return location.
-    mov rbx, [tmp]
-    set_thread_entry [syscore], 11, rbx
-
-    ;; Set current thread's state to active.
-    set_thread_entry [syscore], 2, THREAD_ACTIVE
-
-    ;; Push return location.
-    push qword [tmp]
-
-    ;; Set current thread.
-    mov rax, [syscore]
+    ;; Get next thread.
+    get_thread_get_idx [current_thread], 1
     mov [current_thread], rax
 
-    ;; Set head.
-    mov [head], rax
+    ;; Set this thread as active.
+    set_thread_val_idx [current_thread], 2, THREAD_ACTIVE
 
-    ;; Set init byte.
-    mov byte [threading_is_init], 1
+    ;; Restore thread state.
+    get_thread_get_idx [current_thread], 3
+    get_thread_get_idx [current_thread], 4
+    mov rcx, rax
 
+    get_thread_get_idx [current_thread], 5
+    mov rdx, rax
+
+    get_thread_get_idx [current_thread], 6
+    mov rbx, rax
+
+    get_thread_get_idx [current_thread], 7
+    mov rsp, rax
+
+    get_thread_get_idx [current_thread], 8
+    mov rbp, rax
+
+    get_thread_get_idx [current_thread], 9
+    mov rsi, rax
+
+    get_thread_get_idx [current_thread], 10
+    mov rdi, rax
+
+    get_thread_get_idx [current_thread], 11
+    mov [tmp], rax
+
+    get_thread_get_idx [current_thread], 12
+    mov cr3, rax
+
+    times 5 pop rax
+    mov rax, [tmp]
+    mov [rsp], rax
+
+    sti
     retq
 
 
 spawn:
     cli
-
+    ;; Save "where" param.
     push rdi
-    ;; Allocates a page for a new thread.
-    mov rdi, 1 << 0 | 1 << 1        ;; PAGE_P_PRESENT | PAGE_RW_WRITABLE
+
+    ;; Allocate a page for a thread control block.
     call vmm_alloc_page
     mov [tmp], rax
 
-    cmp rax, 0
-    je .done
+    ;; Set TID as head_thread.TID + 1.
+    get_thread_get_idx [head_thread], 0
+    inc rax
+    set_thread_val_idx [tmp], 0, rax
 
-    ;; Set new thread's TID to head's TID + 1.
-    get_thread_entry [head], 0
-    mov rbx, rax
-    inc rbx
-    set_thread_entry [tmp], 0, rbx
+    ;; Set state as inactive.
+    set_thread_val_idx [tmp], 2, THREAD_INACTIVE
 
-    ;; Allocate a page for new thread's stack.
-    mov rdi, 1 << 0 | 1 << 1        ;; PAGE_P_PRESENT | PAGE_RW_WRITABLE
-    call vmm_alloc_page
-    cmp rax, 0
-    je .done
-    mov rbx, rax
+    ;; Set next as syscore.
+    mov rax, [syscore]
+    set_thread_val_idx [tmp], 1, rax
 
-    ;; Setup new thread's stack.
-    add rbx, PAGE_SIZE
-    dec rbx
-    set_thread_entry [tmp], 7, rbx
-    set_thread_entry [tmp], 8, rbx
+    ;; Allocate a stack for our new thread.
+    mov rdi, STACK_SIZE
+    call kmalloc
 
-    ;; Set new thread's next to syscore.
-    set_thread_entry [tmp], 1, [syscore]
+    add rax, STACK_SIZE
+    dec rax
 
-    ;; Set new thread's state to inactive.
-    set_thread_entry [tmp], 2, THREAD_INACTIVE
+    set_thread_val_idx [tmp], 7, rax                    ;; RSP.
+    set_thread_val_idx [tmp], 8, rax                    ;; RBP.
 
-    ;; Make a new virtual address space.
+    ;; Allocate a new virtual address space for our thread.
     call vmm_mkpml4
-    
-    ;; Set new thread's virtual address space.
-    set_thread_entry [tmp], 12, cr3
+    set_thread_val_idx [tmp], 12, rax
 
-    ;; Set new thread's RIP.
+    ;; Set RIP for our new thread.
     pop rdi
-    set_thread_entry [tmp], 11, rdi
+    set_thread_val_idx [tmp], 11, rdi
 
-    ;; Add new thread to queue.
-    set_thread_entry [head], 1, [tmp]
-    mov rdx, [tmp]
-    mov [head], rdx 
+    ;; Append our thread to the queue.
+    mov rax, [tmp]
+    set_thread_val_idx [head_thread], 1, rax
+    mov [head_thread], rax
 
-    .done:
+    ;; Return TID.
+    get_thread_get_idx [tmp], 0
+
     sti
     retq
 
-a:
-    times 5 nop
-    hlt
-    jmp a
-
-b:
-    times 5 nop
-    hlt
-    jmp b
-
-c:
-    times 5 nop
-    hlt
-    jmp c
-
 section .data
-msg: db "Thread %d is running.", 0xA, 0
-current_thread: dq 0
-tmp: dq 0
-syscore: dq 0
-head: dq 0
 threading_is_init: db 0              ;; 1 if threading is enabled.
+tmp: dq 0
 
 ;; Thread structure layout.
 ;; 0  - qword tid            ;; Thread ID.

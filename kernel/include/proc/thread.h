@@ -48,7 +48,7 @@ struct __attribute__((packed)) Thread
     uint64_t cr3;
 };
 
-void threading_init(void);
+__attribute__((naked)) void threading_init(void);
 
 /*
  *  @brief: Puts the current thread into a killed state.
@@ -63,6 +63,7 @@ __attribute__((naked)) void exit(TEXIT_REASON errno);
  *
  *  @param where        Location for thread to start executing.
  *
+ *  @returns            TID of new thread.
  */
 
 TID spawn(void* where);
