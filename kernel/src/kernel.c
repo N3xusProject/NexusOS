@@ -34,11 +34,13 @@
 #include <arch/memory/pmm.h>
 #include <arch/memory/vmm.h>
 #include <arch/memory/kheap.h>
+#include <arch/memory/gdt.h>
 #include <arch/apic/ioapic.h>
 #include <arch/apic/lapic.h>
 #include <firmware/acpi.h>
 #include <drivers/clocks/PIT.h>
 #include <proc/thread.h>
+#include <proc/tss.h>
 
 
 static void done(void)
@@ -86,6 +88,10 @@ __attribute__((noreturn)) static void init(void) {
 
     init_drivers();
     kprintf(KINFO "Drivers initialized.\n"); 
+
+    write_tss();
+    load_gdt();
+    load_tss();
 
     threading_init(); 
     kprintf(KINFO "Threading initialized.\n");
