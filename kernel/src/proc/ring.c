@@ -22,33 +22,23 @@
  *  SOFTWARE.
  */
 
-#ifndef VMM_H
-#define VMM_H
 
-#include <stdint.h>
+#include <proc/ring.h>
+#include <arch/memory/vmm.h>
 
-typedef enum
+void ring3(void);
+
+void prepare_ring3(void)
 {
-    PAGE_P_PRESENT = (1 << 0),
-    PAGE_RW_WRITABLE = (1 << 1),
-    PAGE_US_USER = (1 << 2)
-} PAGE_BIT;
+    extern uint64_t* pml4;
+    // Allocate a low page for userspace code.
+    vmm_map_page(pml4, (void*)0x2000, PAGE_P_PRESENT | PAGE_RW_WRITABLE | PAGE_US_USER);
 
+    uint8_t* ring3_code_src = (uint8_t*)ring3;
+    uint8_t* ring3_code_dst = (uint8_t*)0x2000;
 
-
-void vmm_init(void);
-void vmm_map_page(uint64_t* pml4, void* logical, uint32_t flags);
-
-/*
- *  To destroy a PML4, just call pmm_free on it.
- *
- */
-uint64_t* vmm_mkpml4(void);
-
-/*
- *  Allocates a page.
- *
- */
-void* vmm_alloc_page(void);
-
-#endif
+    for (uint8_t i = 0; i < 0x1000 && ring3_code_src[i] != 0; ++i)
+    {
+        ring3_code_dst[i] = ring3_code_src[i];
+    }
+}

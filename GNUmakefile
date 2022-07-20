@@ -13,7 +13,11 @@ all: Nexus.iso
 
 .PHONY: run
 run: Nexus.iso
-	qemu-system-$(ARCH) -M q35 -m 2G -drive file=Nexus.iso -boot d -monitor stdio --enable-kvm -d int -D logfile.txt
+	qemu-system-$(ARCH) -M q35 -m 2G -drive file=Nexus.iso -boot d -monitor stdio --enable-kvm
+
+.PHONY: debug
+debug:
+	qemu-system-$(ARCH) -M q35 -m 2G -drive file=Nexus.iso -boot d -monitor stdio -d int -D logfile.txt
 
 limine:
 	git clone https://github.com/limine-bootloader/limine.git --branch=v3.0-branch-binary --depth=1

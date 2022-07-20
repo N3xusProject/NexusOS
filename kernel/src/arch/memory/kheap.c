@@ -107,7 +107,6 @@ void* kmalloc(size_t sz)
     return DATA_START(region);
 }
 
-
 void kfree(void* block)
 {
     struct Block* cur_block = mem_head;

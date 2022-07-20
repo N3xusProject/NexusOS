@@ -73,7 +73,7 @@ void vmm_map_page(uint64_t* _pml4, void* logical, uint32_t flags)
 
     if (!(pt[pt_idx] & PAGE_ADDR_MASK))
     {
-        pt[pt_idx] = (addr & PAGE_ADDR_MASK) | flags;
+        pt[pt_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
     }
 
     invlpg((void*)(uint64_t)ALIGN_DOWN((uint64_t)logical, PAGE_SIZE));
@@ -95,7 +95,7 @@ void vmm_unmap_page(uint64_t* pml4, void* logical)
     uint64_t* pt = (uint64_t*)(pd[pd_idx] & PAGE_ADDR_MASK);
 
     pt[pt_idx] = 0;
-    invlpg((void*)logical);
+    invlpg((void*)addr);
     __asm__ __volatile__("mov %0, %%cr3" :: "r" (pml4));
 }
 
@@ -147,14 +147,19 @@ uint64_t* vmm_mkpml4(void)
 }
 
 void load_pml4(void*);
-
+void ring3(void);               // In ring.asm
 
 void vmm_init(void)
 { 
     __asm__ __volatile__("mov %%cr3, %0" : "=r" (pml4));
     pml4 = vmm_mkpml4();
+
+    vmm_unmap_page(pml4, 0);
+    vmm_unmap_page(pml4, (void*)0x2000);
+
     load_pml4(pml4);
     active_pml4 = pml4;
+
     kprintf("<VMM>: Loaded CR3\n"); 
 }
 

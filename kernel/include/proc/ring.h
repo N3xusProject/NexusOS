@@ -1,3 +1,4 @@
+
 /*
  *  MIT License
  *
@@ -22,33 +23,11 @@
  *  SOFTWARE.
  */
 
-#ifndef VMM_H
-#define VMM_H
-
-#include <stdint.h>
-
-typedef enum
-{
-    PAGE_P_PRESENT = (1 << 0),
-    PAGE_RW_WRITABLE = (1 << 1),
-    PAGE_US_USER = (1 << 2)
-} PAGE_BIT;
+#ifndef RING_H
+#define RING_H
 
 
-
-void vmm_init(void);
-void vmm_map_page(uint64_t* pml4, void* logical, uint32_t flags);
-
-/*
- *  To destroy a PML4, just call pmm_free on it.
- *
- */
-uint64_t* vmm_mkpml4(void);
-
-/*
- *  Allocates a page.
- *
- */
-void* vmm_alloc_page(void);
+void jmp_to_ring3(void);
+void prepare_ring3(void);
 
 #endif

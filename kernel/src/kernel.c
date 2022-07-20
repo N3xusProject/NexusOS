@@ -41,6 +41,7 @@
 #include <drivers/clocks/PIT.h>
 #include <proc/thread.h>
 #include <proc/tss.h>
+#include <proc/ring.h>
 
 
 static void done(void)
@@ -92,6 +93,9 @@ __attribute__((noreturn)) static void init(void) {
     write_tss();
     load_gdt();
     load_tss();
+
+    prepare_ring3();
+    jmp_to_ring3();
 
     threading_init(); 
     kprintf(KINFO "Threading initialized.\n");

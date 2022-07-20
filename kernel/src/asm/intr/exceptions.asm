@@ -22,6 +22,8 @@ extern kprintf
 extern write_panic_msg
 extern hex2str
 extern panic
+extern vmm_map_page
+extern pml4
 
 %macro e_panic 1
     cli

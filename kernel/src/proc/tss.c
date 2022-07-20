@@ -23,13 +23,11 @@
  */
 
 #include <proc/tss.h>
-#include <arch/memory/kheap.h>
+#include <arch/memory/mem.h>
 #include <arch/memory/vmm.h>
 #include <arch/memory/gdt.h>
 #include <libkern/string.h>
 #include <libkern/log.h>
-
-#define STACK_SIZE 0x1000*3
 
 static struct TSSEntry tss;
 
@@ -38,9 +36,8 @@ void write_tss(void)
     extern uint64_t* pml4;
     extern struct TSSDescriptor* gdt_tss;
 
-    uint64_t stack = (uint64_t)kmalloc(STACK_SIZE);
-    vmm_map_page(pml4, (void*)stack, PAGE_P_PRESENT | PAGE_RW_WRITABLE | PAGE_US_USER);
-    stack += (STACK_SIZE - 1);
+    vmm_map_page(pml4, (void*)0x1000, PAGE_P_PRESENT | PAGE_US_USER | PAGE_RW_WRITABLE);
+    uint64_t stack = 0x1000 + (PAGE_SIZE - 1);
 
     memzero(&tss, sizeof(struct TSSEntry));
     tss.rsp0Low = stack & 0xFFFFFFFF;
@@ -53,7 +50,7 @@ void write_tss(void)
     gdt_tss->baseAddrUpper = (tssp >> 24);
     gdt_tss->type = 0x9;
     gdt_tss->zero = 0;
-    gdt_tss->dpl = 0;
+    gdt_tss->dpl = 3;
     gdt_tss->p = 1;
     gdt_tss->g = 1;
 }
@@ -64,6 +61,6 @@ void load_tss(void)
     __asm__ __volatile__(
             "\
             str %bx; \
-            mov $0x38, %bx; \
+            mov $0x48, %bx; \
             ltr %bx;");
 }

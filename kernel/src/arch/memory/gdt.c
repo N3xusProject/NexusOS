@@ -27,7 +27,7 @@
 #include <proc/tss.h>
 #include <stddef.h>
 
-#define GDT_TSS 7
+#define GDT_TSS 0x9
 
 static struct GDTDesc gdt[] = {
     {0}, 
@@ -86,7 +86,27 @@ static struct GDTDesc gdt[] = {
         .base_hi     = 0x00
     },
 
-    // 0x7.
+    // User code: 0x7
+    {
+        .limit       = 0x0000,
+        .base_low    = 0x0000,
+        .base_mid    = 0x00,
+        .access      = 0b11111010,
+        .granularity = 0b10101111,
+        .base_hi     = 0x00
+    },
+
+    // User data: 0x8
+    {
+        .limit       = 0x0000,
+        .base_low    = 0x0000,
+        .base_mid    = 0x00,
+        .access      = 0b11110010,
+        .granularity = 0b00000000,
+        .base_hi     = 0x00
+    },
+
+    // 0x9.
     {0}, {0}, {0}
 };
 
