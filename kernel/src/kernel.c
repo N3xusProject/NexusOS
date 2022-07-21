@@ -43,9 +43,20 @@
 #include <proc/tss.h>
 #include <proc/ring.h>
 
+static int a(void)
+{
+    while (1)
+    {
+        CLI;
+        kprintf("A");
+        STI;
+    }
+}
+
 
 static void done(void)
 {
+    spawn(a);
     STI;
   	for (;;) 
     {
@@ -90,8 +101,8 @@ __attribute__((noreturn)) static void init(void) {
     init_drivers();
     kprintf(KINFO "Drivers initialized.\n"); 
 
-    write_tss();
     load_gdt();
+    write_tss();
     load_tss();
 
     prepare_ring3();

@@ -32,7 +32,6 @@
 #define INT_GATE_FLAGS 0x8E
 #define IDT_INT_GATE_USER 0xEE
 
-
 struct InterruptGateDescriptor {
     uint16_t isr_low16;
     uint16_t cs;

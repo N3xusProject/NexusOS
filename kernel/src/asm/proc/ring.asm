@@ -17,6 +17,8 @@ jmp_to_ring3:
     mov fs, ax
     mov gs, ax
 
+    mov rbp, 0x500+0x200
+
     push 0x40 | 3
     push 0x500+0x200          ;; RSP.
     pushf
@@ -29,4 +31,4 @@ jmp_to_ring3:
 ;; to a low page.
 ring3:
     jmp ring3
-    nop                 ;; prepare_ring3() will stop copying here (NOP => OPCODE: 0).
+    nop                 ;; prepare_ring3() will stop copying from here (NOP => OPCODE: 0).

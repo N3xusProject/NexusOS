@@ -44,6 +44,7 @@ void vmm_map_page(uint64_t* _pml4, void* logical, uint32_t flags)
     // Ensure one of the flags is PAGE_P_PRESENT.
     flags |= PAGE_P_PRESENT;
     uint64_t addr = (uint64_t)logical;
+    addr &= PAGE_ADDR_MASK;
 
     int pml4_idx = (addr >> 39) & 0x1FF;
     int pdpt_idx = (addr >> 30) & 0x1FF;
@@ -76,14 +77,14 @@ void vmm_map_page(uint64_t* _pml4, void* logical, uint32_t flags)
         pt[pt_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
     }
 
-    invlpg((void*)(uint64_t)ALIGN_DOWN((uint64_t)logical, PAGE_SIZE));
-    __asm__ __volatile__("mov %0, %%cr3" :: "r" (_pml4));
+    invlpg((void*)addr);
 }
 
 
 void vmm_unmap_page(uint64_t* pml4, void* logical)
 {
-    uint64_t addr = (uint64_t)ALIGN_DOWN((uint64_t)logical, PAGE_SIZE);
+    uint64_t addr = (uint64_t)logical;
+    addr &= PAGE_ADDR_MASK;
 
     int pml4_idx = (addr >> 39) & 0x1FF;
     int pdpt_idx = (addr >> 30) & 0x1FF;
@@ -96,7 +97,6 @@ void vmm_unmap_page(uint64_t* pml4, void* logical)
 
     pt[pt_idx] = 0;
     invlpg((void*)addr);
-    __asm__ __volatile__("mov %0, %%cr3" :: "r" (pml4));
 }
 
 void load_pml4(void* pml4_phys);

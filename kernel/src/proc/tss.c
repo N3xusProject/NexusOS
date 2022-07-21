@@ -26,41 +26,37 @@
 #include <arch/memory/mem.h>
 #include <arch/memory/vmm.h>
 #include <arch/memory/gdt.h>
-#include <libkern/string.h>
 #include <libkern/log.h>
+#include <libkern/string.h>
 
-static struct TSSEntry tss;
+
+static struct TSSEntry* tss = NULL;
 
 void write_tss(void)
 {
-    extern uint64_t* pml4;
     extern struct TSSDescriptor* gdt_tss;
+    extern uint64_t* pml4;
 
-    vmm_map_page(pml4, (void*)0x1000, PAGE_P_PRESENT | PAGE_US_USER | PAGE_RW_WRITABLE);
-    uint64_t stack = 0x1000 + (PAGE_SIZE - 1);
+    tss = vmm_alloc_page();
+    vmm_unmap_page(pml4, tss);
+    vmm_map_page(pml4, tss, PAGE_P_PRESENT | PAGE_RW_WRITABLE | PAGE_US_USER);
 
-    memzero(&tss, sizeof(struct TSSEntry));
-    tss.rsp0Low = stack & 0xFFFFFFFF;
-    tss.rsp0High = (stack >> 32);
+    uint64_t stack = (uint64_t)vmm_alloc_page();
+    stack += (PAGE_SIZE - 1);
 
-    uint64_t tssp = (uint64_t)&tss;
-    gdt_tss->seglimit = sizeof(struct TSSDescriptor) - 1;
+    memzero(tss, sizeof(struct TSSEntry));
+    tss->rsp0Low = stack & 0xFFFFFFFF;
+    tss->rsp0High = (stack >> 32);
+
+    uint64_t tssp = (uint64_t)tss;
+    gdt_tss->seglimit = sizeof(struct TSSDescriptor);
     gdt_tss->baseAddrLow = tssp & 0xFFFF;
     gdt_tss->baseAddrMiddle = (tssp >> 16) & 0xFF;
-    gdt_tss->baseAddrUpper = (tssp >> 24);
+    gdt_tss->baseAddrUpper = (tssp >> 24) & 0xFFFFFFFF;
     gdt_tss->type = 0x9;
+    gdt_tss->avl = 0;
     gdt_tss->zero = 0;
-    gdt_tss->dpl = 3;
+    gdt_tss->dpl = 0;
     gdt_tss->p = 1;
     gdt_tss->g = 1;
-}
-
-
-void load_tss(void)
-{
-    __asm__ __volatile__(
-            "\
-            str %bx; \
-            mov $0x48, %bx; \
-            ltr %bx;");
 }

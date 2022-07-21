@@ -38,6 +38,7 @@ typedef enum
 
 void vmm_init(void);
 void vmm_map_page(uint64_t* pml4, void* logical, uint32_t flags);
+void vmm_unmap_page(uint64_t* pml4, void* logical);
 
 /*
  *  To destroy a PML4, just call pmm_free on it.

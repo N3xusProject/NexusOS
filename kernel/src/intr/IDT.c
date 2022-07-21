@@ -23,6 +23,11 @@
  */
 
 #include <intr/IDT.h>
+#include <proc/tss.h>
+#include <arch/memory/vmm.h>
+#include <arch/memory/mem.h>
+#include <libkern/string.h>
+#include <stddef.h>
 
 static struct InterruptGateDescriptor idt[256];
 static struct IDTR idtr;
@@ -37,12 +42,13 @@ void set_idt_desc(uint8_t vector, void* isr, uint32_t flags) {
     vec->attr = flags;
     vec->cs = 0x28;
     vec->ist = 0;
-    vec->dpl = 3;
+    vec->dpl = 0;
     vec->reserved = 0;
     vec->zero = 0;
     vec->zero1 = 0;
     vec->zero2 = 0;
 }
+
 
 void idt_install(void) {
     idtr.limit = sizeof(struct InterruptGateDescriptor) * 256 - 1;
