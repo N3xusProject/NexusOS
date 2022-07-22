@@ -29,7 +29,37 @@
 #include <stdint.h>
 #include <limine.h>
 
+/*
+ *  -- Limine file --
+ *
+ *  struct limine_file {
+ *       uint64_t revision;
+ *       void *address;
+ *       uint64_t size;
+ *       char *path;
+ *       char *cmdline;
+ *       uint32_t media_type;
+ *       uint32_t unused;
+ *       uint32_t tftp_ip;
+ *       uint32_t tftp_port;
+ *       uint32_t partition_index;
+ *       uint32_t mbr_disk_id;
+ *       struct limine_uuid gpt_disk_uuid;
+ *       struct limine_uuid gpt_part_uuid;
+ *       struct limine_uuid part_uuid;
+ *   };
+ *
+ *
+ */
+
 uint64_t get_module_count(void);
+
+/*
+ *  Returns pointer to file if found,
+ *  otherwise NULL.
+ *
+ */
+
 struct limine_file* get_module_by_name(const char* name);
 
 #endif

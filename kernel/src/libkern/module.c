@@ -23,7 +23,6 @@
  */
 
 #include <libkern/module.h>
-#include <libkern/log.h>
 #include <libkern/string.h>
 
 static struct limine_module_request boot_modules_req = {

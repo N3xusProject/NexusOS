@@ -31,6 +31,7 @@ extern pml4
 
     mov rdi, panic_msg
     mov rsi, %1
+    movzx rdx, word [rsp]
     call kprintf
 
     call panic
@@ -72,4 +73,5 @@ general_protection_fault:
 page_fault:
     e_panic 0xE
 
-panic_msg: db "VECTOR FIRED: %x", 0xA, 0
+panic_msg: db "VECTOR FIRED: %x", 0xA
+stktp_msg: db "STACK TOP: %x", 0xA, 0

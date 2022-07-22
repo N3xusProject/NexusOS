@@ -5,7 +5,9 @@ bits 64
 global jmp_to_ring3
 global ring3
 
-extern kmalloc
+%define TMP_USER_STACK_START 0x500+0x200
+
+extern ring3_entry
 
 section .text
 jmp_to_ring3:
@@ -17,18 +19,11 @@ jmp_to_ring3:
     mov fs, ax
     mov gs, ax
 
-    mov rbp, 0x500+0x200
+    mov rbp, TMP_USER_STACK_START
 
     push 0x40 | 3
-    push 0x500+0x200          ;; RSP.
+    push rbp                  ;; RSP.
     pushf
     push 0x38 | 3
-    push 0x2000
+    push 0x2000               ;; RIP (0x2000 is where nexd is loaded in memory).
     iretq
-
-;; Will not be jumped to directly, 
-;; instead code will be copied over
-;; to a low page.
-ring3:
-    jmp ring3
-    nop                 ;; prepare_ring3() will stop copying from here (NOP => OPCODE: 0).
