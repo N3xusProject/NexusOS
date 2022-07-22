@@ -43,20 +43,21 @@
 #include <proc/tss.h>
 #include <proc/ring.h>
 
-static int a(void)
+void a(void)
 {
     while (1)
     {
         CLI;
-        kprintf("A");
+        kprintf("A\n");
         STI;
+        HLT;
     }
 }
 
 
 static void done(void)
 {
-    spawn(a);
+    spawn(jmp_to_ring3);
     STI;
   	for (;;) 
     {
@@ -106,10 +107,10 @@ __attribute__((noreturn)) static void init(void) {
     load_tss();
 
     prepare_ring3();
-    jmp_to_ring3();
 
     threading_init(); 
     kprintf(KINFO "Threading initialized.\n");
+
     done();
 
     // We may not return because threading_init()
