@@ -38,8 +38,7 @@ void write_tss(void)
     extern uint64_t* pml4;
 
     tss = vmm_alloc_page();
-    vmm_unmap_page(pml4, tss);
-    vmm_map_page(pml4, tss, PAGE_P_PRESENT | PAGE_RW_WRITABLE | PAGE_US_USER);
+    vmm_map_page(pml4, tss, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
 
     uint64_t stack = (uint64_t)vmm_alloc_page();
     stack += (PAGE_SIZE - 1);
