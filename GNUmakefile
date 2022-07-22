@@ -32,6 +32,7 @@ kernel:
 	cd kernel; bash buildall
 
 Nexus.iso: limine kernel
+	mkdir -p base/internals/
 	cd system/nexd; make; mv nexd.bin ../../base/internals/nexd.sys
 	rm -rf iso_root
 	mkdir -p iso_root
