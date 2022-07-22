@@ -103,9 +103,11 @@ __attribute__((noreturn)) static void init(void) {
     kprintf(KINFO "Drivers initialized.\n"); 
 
     load_gdt();
+    kprintf(KINFO "GDT loaded.\n");
     write_tss();
+    kprintf(KINFO "TSS initialized.\n");
     load_tss();
-
+    kprintf(KINFO "TSS loaded.\n");
     prepare_ring3();
     jmp_to_ring3();
 
