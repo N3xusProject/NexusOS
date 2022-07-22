@@ -3,5 +3,5 @@ limine/
 logfile.txt
 *.d
 kernel/*.sys
-base/internals/*.sys
+base/internals/
 *.o
