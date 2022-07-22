@@ -22,36 +22,12 @@
  *  SOFTWARE.
  */
 
-#include <intr/IDT.h>
-#include <proc/tss.h>
-#include <arch/memory/vmm.h>
-#include <arch/memory/mem.h>
-#include <libkern/string.h>
-#include <stddef.h>
 
-static struct InterruptGateDescriptor idt[256];
-static struct IDTR idtr;
-
-void set_idt_desc(uint8_t vector, void* isr, uint32_t flags) {
-    uint64_t addr = (uint64_t)isr;
-    struct InterruptGateDescriptor* vec = &idt[vector];
-    vec->isr_low16 = addr & 0xFFFF;
-    vec->isr_mid16 = (addr >> 16) & 0xFFFF;
-    vec->isr_high32 = (addr >> 32);
-    vec->p = 1;
-    vec->attr = flags;
-    vec->cs = 0x28;
-    vec->ist = 0;
-    vec->dpl = 3;
-    vec->reserved = 0;
-    vec->zero = 0;
-    vec->zero1 = 0;
-    vec->zero2 = 0;
-}
+#ifndef SYSCALL_H
+#define SYSCALL_H
 
 
-void idt_install(void) {
-    idtr.limit = sizeof(struct InterruptGateDescriptor) * 256 - 1;
-    idtr.base = (uint64_t)&idt;
-    __asm__ __volatile__("lidt %0" :: "m" (idtr));
-}
+void syscall_dispatcher(void);
+
+
+#endif

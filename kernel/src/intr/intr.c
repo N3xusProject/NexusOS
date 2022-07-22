@@ -26,6 +26,7 @@
 #include <intr/exceptions.h>
 #include <intr/IDT.h>
 #include <intr/irq.h>
+#include <intr/syscall.h>
 #include <arch/apic/ioapic.h>
 #include <firmware/acpi.h>
 
@@ -62,6 +63,8 @@ void intr_init(void)
      {
         set_idt_desc(i, exceptions[i], TRAP_GATE_FLAGS);
      }
+    
+     set_idt_desc(0x80, syscall_dispatcher, IDT_INT_GATE_USER);
 
      idt_install();
 }
