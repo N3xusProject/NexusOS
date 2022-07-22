@@ -24,13 +24,16 @@
 
 #include <intr/syscall.h>
 #include <libkern/log.h>
+#include <drivers/api/devctl.h>
 #include <stdint.h>
 
-#define MAX_SYSCALLS 1
+// If changed, change the macro in syscall.asm too.
+#define MAX_SYSCALLS 2
 
 
 struct SycallRegs 
 {
+    uint64_t rax;
     uint64_t rbx;
     uint64_t rcx;
     uint64_t rdx;
@@ -48,6 +51,23 @@ static void sys_hello(void)
 }
 
 
-void(*syscall_table)() = {
-    sys_hello
+/*
+ *  Args:
+ *
+ *  RBX: DRIVER_ID,
+ *  RCX: REQUEST.
+ *  
+ *  Returns 
+ *
+ */
+
+static void sys_devctl(void)
+{
+    syscall_regs.rax = devctl(syscall_regs.rbx, syscall_regs.rcx);
+}
+
+
+void(*syscall_table[MAX_SYSCALLS])(void) = {
+    sys_hello,
+    sys_devctl,
 };
