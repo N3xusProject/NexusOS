@@ -26,5 +26,4 @@ jmp_to_ring3:
     pushf
     push 0x38 | 3
     push 0x2000               ;; RIP (0x2000 is where nexd is loaded in memory).
-    sti
     iretq

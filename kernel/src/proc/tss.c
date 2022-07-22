@@ -24,26 +24,27 @@
 
 #include <proc/tss.h>
 #include <arch/memory/mem.h>
+#include <arch/memory/kheap.h>
 #include <arch/memory/vmm.h>
 #include <arch/memory/gdt.h>
 #include <libkern/log.h>
 #include <libkern/string.h>
 
 
-static struct TSSEntry* tss = NULL;
+static struct TSSEntry* tss;
 
 void write_tss(void)
 {
     extern struct TSSDescriptor* gdt_tss;
     extern uint64_t* pml4;
 
-    tss = vmm_alloc_page();
+    tss = kmalloc(sizeof(struct TSSEntry));
     vmm_map_page(pml4, tss, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
 
     uint64_t stack = (uint64_t)vmm_alloc_page();
     stack += (PAGE_SIZE - 1);
 
-    memzero(tss, sizeof(struct TSSEntry));
+    memzero(&tss, sizeof(struct TSSEntry));
     tss->rsp0Low = stack & 0xFFFFFFFF;
     tss->rsp0High = (stack >> 32);
 
@@ -55,7 +56,7 @@ void write_tss(void)
     gdt_tss->type = 0x9;
     gdt_tss->avl = 0;
     gdt_tss->zero = 0;
-    gdt_tss->dpl = 0;
+    gdt_tss->dpl = 3;
     gdt_tss->p = 1;
     gdt_tss->g = 1;
 }
