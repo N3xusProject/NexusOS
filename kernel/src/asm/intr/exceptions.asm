@@ -74,4 +74,4 @@ page_fault:
     e_panic 0xE
 
 panic_msg: db "VECTOR FIRED: %x", 0xA
-stktp_msg: db "STACK TOP: %x", 0xA, 0
+stktp_msg: db "STACK TOP VALUE: %x", 0xA, 0
