@@ -32,12 +32,13 @@ kernel:
 	cd kernel; bash buildall
 
 Nexus.iso: limine kernel
+	cd system/nexd; make; mv nexd.bin ../../base/internals/nexd.sys
 	rm -rf iso_root
 	mkdir -p iso_root
 	mkdir -p iso_root/Nexus
 	cp base/limine.cfg \
 		limine/limine.sys limine/limine-cd.bin limine/limine-cd-efi.bin iso_root/
-	cp kernel/$(KERN_FILE) base/modules/* iso_root/Nexus/
+	cp kernel/$(KERN_FILE) base/internals/* iso_root/Nexus/
 	xorriso -as mkisofs -b limine-cd.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
 		--efi-boot limine-cd-efi.bin \
