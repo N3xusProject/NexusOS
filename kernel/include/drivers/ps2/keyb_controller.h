@@ -27,12 +27,11 @@
 
 #include <drivers/api/devctl.h>
 
-// Toggle keyboard led.
-#define CAPSLOCK_LED_TOGGLE_REQ 0xdeb5a40523c
-
 void send_cpu_reset(void);
 
 // Used by devctl.
-DEVCTL_RESP ps2_send_req(DEVCTL_REQ request);
+DEVCTL_RESP ps2_req_respond(DEVCTL_REQ request);
+
+__attribute__((interrupt)) void irq1_handler(void*);
 
 #endif
