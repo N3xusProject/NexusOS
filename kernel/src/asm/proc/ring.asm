@@ -7,11 +7,6 @@ bits 64
 
 global jmp_to_ring3
 global ring3
-
-extern vmm_unmap_page
-extern vmm_map_page
-
-extern map_user_stack ;;(void* stack_base, uint64_t stack_size, uint64_t cr3_value)
 extern ring3_entry
 
 section .text
@@ -24,11 +19,6 @@ jmp_to_ring3:
     mov fs, ax
     mov gs, ax
     
-    mov rdi, rbp
-    mov rsi, STACK_SIZE
-    mov rdx, cr3
-    call map_user_stack
-
     push 0x40 | 3
     push rbp                  ;; RSP.
     pushf

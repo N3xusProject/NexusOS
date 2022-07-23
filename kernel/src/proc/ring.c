@@ -63,19 +63,3 @@ void prepare_ring3(void)
         ring3_code_dst[i] = ring3_code_src[i];
     }
 }
-
-
-void map_user_stack(void* stack_base, uint64_t stack_size, uint64_t cr3_value)
-{
-    for (uint64_t i = 0; i < stack_size; i += 0x1000)
-    {
-        // First unmap to ensure that this page is not already mapped
-        // when we map it.
-        // vmm_unmap_page((void*)cr3_value, stack_base);
-        vmm_map_page((void*)cr3_value, stack_base, PAGE_P_PRESENT | PAGE_US_USER | PAGE_RW_WRITABLE);
-        kprintf("%x\n", stack_base);
-        stack_base += 0x1000;
-    }
-
-    __asm__ __volatile__("cli; hlt");
-}

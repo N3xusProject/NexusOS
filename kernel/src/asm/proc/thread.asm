@@ -11,6 +11,7 @@ extern current_thread
 extern head_thread
 extern syscore
 extern vmm_alloc_page
+extern map_stack
 extern kmalloc
 extern vmm_mkpml4
 
@@ -161,21 +162,28 @@ spawn:
     mov rax, [syscore]
     set_thread_val_idx [tmp], 1, rax
 
+    ;; Allocate a new virtual address space for our thread.
+    call vmm_mkpml4
+    set_thread_val_idx [tmp], 12, rax
+
+    push rax
+
     ;; Allocate a stack for our new thread.
     mov rdi, STACK_SIZE
     call kmalloc
     cmp rax, 0
     jz .err
 
+    pop rdi
+    mov rsi, rax
+    mov rdx, STACK_SIZE
+    call map_stack
+
     add rax, STACK_SIZE
     dec rax
-
+    
     set_thread_val_idx [tmp], 7, rax                    ;; RSP.
     set_thread_val_idx [tmp], 8, rax                    ;; RBP.
-
-    ;; Allocate a new virtual address space for our thread.
-    call vmm_mkpml4
-    set_thread_val_idx [tmp], 12, rax
 
     ;; Set RIP for our new thread.
     pop rdi

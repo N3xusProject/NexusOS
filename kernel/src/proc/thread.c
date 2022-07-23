@@ -104,3 +104,13 @@ __attribute__((naked)) void threading_init(void)
     vmm_map_page(new_vaddrsp, (void*)rip,  PAGE_P_PRESENT | PAGE_RW_WRITABLE);
     __asm__ __volatile__("movq %0, (%%rsp); retq" :: "r" (rip));
 }
+
+
+void map_stack(uint64_t pml4, uint64_t stack_base, uint64_t n_bytes)
+{
+    for (uint64_t i = 0; i < n_bytes*3; i += 0x1000)
+    {
+        vmm_map_page((void*)pml4, (void*)stack_base, PAGE_P_PRESENT | PAGE_RW_WRITABLE | PAGE_US_USER);
+        stack_base += 0x1000; 
+    }
+}
