@@ -114,8 +114,8 @@ __attribute__((noreturn)) static void init(void) {
     prepare_ring3();
 
     threading_init(); 
-    kprintf(KINFO "Threading initialized.\n");
 
+    kprintf(KINFO "Threading initialized.\n");
     done();
 
     // We may not return because threading_init()

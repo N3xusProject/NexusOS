@@ -5,7 +5,12 @@
 bits 64
 
 global load_pml4
+global _invlpg
 
 load_pml4:  
     mov cr3, rdi
+    retq
+
+_invlpg:
+    invlpg [rdi]
     retq

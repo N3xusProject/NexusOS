@@ -37,6 +37,13 @@ typedef enum
 
 
 void vmm_init(void);
+
+ 
+/*
+ *  NOTE: It is usually a good idea to unmap a page before mapping it to ensure correctness of
+ *  this function.
+ */
+
 void vmm_map_page(uint64_t* pml4, void* logical, uint32_t flags);
 void vmm_unmap_page(uint64_t* pml4, void* logical);
 

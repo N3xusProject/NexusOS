@@ -2,9 +2,16 @@
 ;; See LICENSE file.
 bits 64
 
+
+%define STACK_SIZE 0x1000*3
+
 global jmp_to_ring3
 global ring3
 
+extern vmm_unmap_page
+extern vmm_map_page
+
+extern map_user_stack ;;(void* stack_base, uint64_t stack_size, uint64_t cr3_value)
 extern ring3_entry
 
 section .text
@@ -16,6 +23,11 @@ jmp_to_ring3:
     mov es, ax
     mov fs, ax
     mov gs, ax
+    
+    mov rdi, rbp
+    mov rsi, STACK_SIZE
+    mov rdx, cr3
+    call map_user_stack
 
     push 0x40 | 3
     push rbp                  ;; RSP.

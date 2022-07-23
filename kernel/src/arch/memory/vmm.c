@@ -33,11 +33,8 @@
 uint64_t* pml4;
 uint64_t* active_pml4;
 
-static void invlpg(void* addr)
-{
+void _invlpg(void* addr);
 
-    __asm__ __volatile__("invlpg (%0)" : : "r" (addr));
-}
 
 void vmm_map_page(uint64_t* _pml4, void* logical, uint32_t flags)
 {
@@ -51,31 +48,43 @@ void vmm_map_page(uint64_t* _pml4, void* logical, uint32_t flags)
 
     if (!(_pml4[pml4_idx] & PAGE_P_PRESENT))
     {
-        _pml4[pml4_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
+        uint64_t pdpt = (uint64_t)vmm_alloc_page();
+        memzero((void*)pdpt, PAGE_SIZE);
+        _pml4[pml4_idx] = (pdpt & PAGE_ADDR_MASK) | flags;
+        vmm_map_page(_pml4, (void*)pdpt, flags);
     }
 
     uint64_t* pdpt = (uint64_t*)(_pml4[pml4_idx] & PAGE_ADDR_MASK);
 
     if (!(pdpt[pdpt_idx] & PAGE_P_PRESENT))
     {
-        pdpt[pdpt_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
+        uint64_t pd = (uint64_t)vmm_alloc_page();
+        memzero((void*)pd, PAGE_SIZE);
+        pdpt[pdpt_idx] = (pd & PAGE_ADDR_MASK) | flags;
+        vmm_map_page(_pml4, (void*)pd, flags);
     }
 
     uint64_t* pd = (uint64_t*)(pdpt[pdpt_idx] & PAGE_ADDR_MASK);
 
     if (!(pd[pd_idx] & PAGE_P_PRESENT))
     {
-        pd[pd_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
+        uint64_t pt = (uint64_t)vmm_alloc_page();
+        memzero((void*)pt, PAGE_SIZE);
+        pd[pd_idx] = (pt & PAGE_ADDR_MASK) | flags;
+        vmm_map_page(_pml4, (void*)pt, flags);
     }
 
     uint64_t* pt = (uint64_t*)(pd[pd_idx] & PAGE_ADDR_MASK);
-
-    if (!(pt[pt_idx] & PAGE_ADDR_MASK))
+    
+    if (!(pt[pt_idx] & PAGE_P_PRESENT))
     {
         pt[pt_idx] = ((uint64_t)pmm_allocz() & PAGE_ADDR_MASK) | flags;
+        _invlpg((void*)addr);
     }
-
-    invlpg((void*)addr);
+    else
+    {
+        pt[pt_idx] |= flags;
+    }
 }
 
 
@@ -89,27 +98,38 @@ void vmm_unmap_page(uint64_t* pml4, void* logical)
     int pd_idx = (addr >> 21) & 0x1FF;
     int pt_idx = (addr >> 12) & 0x1FF;
 
+    if (!(pml4[pml4_idx] & PAGE_P_PRESENT))
+    {
+        return;
+    }
+
     uint64_t* pdpt = (uint64_t*)(pml4[pml4_idx] & PAGE_ADDR_MASK);
+
+    if (!(pdpt[pdpt_idx] & PAGE_P_PRESENT))
+    {
+        return;
+    }
+
     uint64_t* pd = (uint64_t*)(pdpt[pdpt_idx] & PAGE_ADDR_MASK);
+
+    if (!(pd[pd_idx] & PAGE_P_PRESENT))
+    {
+        return;
+    }
+
     uint64_t* pt = (uint64_t*)(pd[pd_idx] & PAGE_ADDR_MASK);
 
+    if (!(pt[pt_idx] & PAGE_P_PRESENT))
+    {
+        return;
+    }
+
+    _invlpg((void*)addr);
     pt[pt_idx] = 0;
-    invlpg((void*)addr);
 }
 
 void load_pml4(void* pml4_phys);
 
-
-static void* internal_alloc(uint32_t flags)
-{
-    uint64_t phys = (uint64_t)pmm_allocz();
-
-    uint64_t tmp = (uint64_t)ALIGN_UP(phys, PAGE_SIZE);
-    void* ret = (void*)tmp;
-    
-    vmm_map_page(pml4, ret, flags);
-    return ret;
-}
 
 static uint64_t* read_cr3(void)
 {
@@ -135,7 +155,6 @@ uint64_t* vmm_mkpml4(void)
 
     uint64_t* new_pml4 = vmm_alloc_page();
     uint64_t* boot_pml4 = read_cr3();
-
     for (uint16_t i = 0; i < 512; ++i)
     {
         new_pml4[i] = boot_pml4[i];
@@ -148,12 +167,12 @@ void load_pml4(void*);
 void ring3(void);               // In ring.asm
 
 void vmm_init(void)
-{ 
+{
     __asm__ __volatile__("mov %%cr3, %0" : "=r" (pml4));
     pml4 = vmm_mkpml4();
 
-    vmm_unmap_page(pml4, 0);
-    vmm_unmap_page(pml4, (void*)0x2000);
+    // vmm_unmap_page(pml4, 0);
+    vmm_map_page(pml4, (void*)0x2000, PAGE_P_PRESENT | PAGE_RW_WRITABLE | PAGE_US_USER);
 
     load_pml4(pml4);
     active_pml4 = pml4;

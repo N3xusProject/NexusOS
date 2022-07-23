@@ -17,14 +17,13 @@ static volatile struct limine_terminal_request term_req = {
 
 static struct limine_terminal* terminal = NULL;
 
-
 static void puts(const char* str) 
 {
     if (terminal == NULL) {
         terminal = term_req.response->terminals[0];
     }
 
-    term_req.response->write(terminal, str, strlen(str));
+    term_req.response->write(terminal, str, strlen(str)); 
 }
 
 
