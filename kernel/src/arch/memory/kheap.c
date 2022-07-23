@@ -47,13 +47,12 @@ static struct Block* mem_head = NULL;
 static struct Block* mem_tail = NULL;
 static size_t bytes_allocated = 0;
 
-
-extern uint64_t* active_pml4;
+extern uint64_t* pml4;
 
 
 void kheap_init(void) 
 {
-    vmm_map_page(active_pml4, (void*)KHEAP_START, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
+    vmm_map_page(pml4, (void*)KHEAP_START, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
     mem_head = (struct Block*)KHEAP_START;
     mem_head->next = NULL;
     mem_head->size = 0;
@@ -81,7 +80,7 @@ static struct Block* first_fit(size_t size)
     return NULL;
 }
 
-void* kmalloc(size_t sz) 
+void* kmalloc(size_t sz)
 {
     if (bytes_allocated + sz > KHEAP_LIMIT)
     {
@@ -89,7 +88,14 @@ void* kmalloc(size_t sz)
     }
 
     struct Block* region = first_fit(sz);
-    vmm_map_page(active_pml4, region, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
+
+    // Map the whole region.
+    void* tmp = region;
+    for (uint64_t i = 0; i < sz; i += 0x1000)
+    {
+        vmm_map_page(pml4, tmp, PAGE_P_PRESENT | PAGE_RW_WRITABLE | PAGE_US_USER);
+        tmp += 0x1000;
+    }
 
     if (region == NULL)
     {

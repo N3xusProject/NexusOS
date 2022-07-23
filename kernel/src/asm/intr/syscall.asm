@@ -6,6 +6,9 @@ global syscall_dispatcher
 extern syscall_regs
 extern syscall_table
 
+;; If changed, change in syscall.c as well.
+%define MAX_SYSCALLS 3
+
 %macro set_reg_at 2
     mov r11, syscall_regs
     add r11, 8*%1
@@ -19,9 +22,6 @@ extern syscall_table
     mov rax, qword [r11]
 %endmacro
 
-
-;; If changed, change in syscall.c as well.
-%define MAX_SYSCALLS 2
 
 syscall_dispatcher:
     cli

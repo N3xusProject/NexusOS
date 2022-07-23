@@ -48,7 +48,7 @@ void* driverctl_get_reqhandler(DRIVER_CLASS driver_class)
     switch (driverctl_get_type(driver_class))
     {
         case KEYBOARD_TYPE_PS2:
-            return ps2_send_req;
+            return ps2_req_respond;
         default:
             return NULL;
     }

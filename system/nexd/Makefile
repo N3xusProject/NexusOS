@@ -14,6 +14,7 @@ all:
 	    -mno-red-zone        \
 	    -mcmodel=kernel      \
 	    -MMD                 \
+	    -Tlinker.ld			 \
 	    src/main.c -o main.o
 	objcopy -O binary -j .text main.o nexd.bin
-	rm *.o *.d
+	# rm *.o *.d

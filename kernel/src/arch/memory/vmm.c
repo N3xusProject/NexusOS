@@ -41,8 +41,6 @@ static void invlpg(void* addr)
 
 void vmm_map_page(uint64_t* _pml4, void* logical, uint32_t flags)
 {
-    // Ensure one of the flags is PAGE_P_PRESENT.
-    flags |= PAGE_P_PRESENT;
     uint64_t addr = (uint64_t)logical;
     addr &= PAGE_ADDR_MASK;
 

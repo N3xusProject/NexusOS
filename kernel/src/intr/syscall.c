@@ -28,7 +28,7 @@
 #include <stdint.h>
 
 // If changed, change the macro in syscall.asm too.
-#define MAX_SYSCALLS 2
+#define MAX_SYSCALLS 3
 
 
 struct SycallRegs 
@@ -57,7 +57,9 @@ static void sys_hello(void)
  *  RBX: DRIVER_CLASS,
  *  RCX: REQUEST.
  *  
- *  Returns 
+ *  Returns status in RAX.
+ *
+ *  See the devctl_in documentation in docs/syscalls/devctl.txt
  *
  */
 
@@ -67,7 +69,25 @@ static void sys_devctl(void)
 }
 
 
+/*
+ *  Args:
+ *
+ *  Same as above except that it also takes
+ *  RDX which will be the pointer to a buffer, and RAX returns
+ *  a non-status value.
+ *  
+ *  See the devctl_in documentation in docs/syscalls/devctl_in.txt
+ *
+ */
+
+static void sys_devctl_in(void)
+{
+    syscall_regs.rax = devctl_in(syscall_regs.rbx, syscall_regs.rcx);
+}
+
+
 void(*syscall_table[MAX_SYSCALLS])(void) = {
     sys_hello,
     sys_devctl,
+    sys_devctl_in,
 };

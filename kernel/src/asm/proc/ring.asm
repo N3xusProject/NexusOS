@@ -5,8 +5,6 @@ bits 64
 global jmp_to_ring3
 global ring3
 
-%define TMP_USER_STACK_START 0x500+0x200
-
 extern ring3_entry
 
 section .text
@@ -18,8 +16,6 @@ jmp_to_ring3:
     mov es, ax
     mov fs, ax
     mov gs, ax
-
-    mov rbp, TMP_USER_STACK_START
 
     push 0x40 | 3
     push rbp                  ;; RSP.

@@ -112,7 +112,6 @@ __attribute__((noreturn)) static void init(void) {
     load_tss();
     kprintf(KINFO "TSS loaded.\n");
     prepare_ring3();
-    jmp_to_ring3();
 
     threading_init(); 
     kprintf(KINFO "Threading initialized.\n");

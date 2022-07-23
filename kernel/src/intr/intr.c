@@ -28,6 +28,7 @@
 #include <intr/irq.h>
 #include <intr/syscall.h>
 #include <arch/apic/ioapic.h>
+#include <drivers/ps2/keyb_controller.h>
 #include <firmware/acpi.h>
 
 static void(*exceptions[])(void) = {
@@ -54,6 +55,10 @@ void intr_setup_irqs(void)
     // Timer IRQ.
     set_idt_desc(0x20, irq0, INT_GATE_FLAGS);
     ioapic_set_entry(acpi_map_irq(0), 0x20);
+
+    // Keyboard IRQ.
+    set_idt_desc(0x21, irq0, INT_GATE_FLAGS);
+    ioapic_set_entry(acpi_map_irq(1), 0x21);
 }
 
 
