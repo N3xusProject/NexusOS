@@ -93,7 +93,7 @@ void* kmalloc(size_t sz)
     void* tmp = region;
     for (uint64_t i = 0; i < sz; i += 0x1000)
     {
-        vmm_map_page(pml4, tmp, PAGE_P_PRESENT | PAGE_RW_WRITABLE | PAGE_US_USER);
+        vmm_map_page(pml4, tmp, PAGE_P_PRESENT | PAGE_RW_WRITABLE);
         tmp += 0x1000;
     }
 
