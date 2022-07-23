@@ -1,4 +1,4 @@
-devctl is a syscall that exposes a driver's interface to userspace.
+devctl_in is a syscall that exposes a driver's interface to userspace.
 This is like devctl but can read data from a driver.
 
 Arguments:
