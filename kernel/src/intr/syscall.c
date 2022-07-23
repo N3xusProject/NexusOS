@@ -54,7 +54,7 @@ static void sys_hello(void)
 /*
  *  Args:
  *
- *  RBX: DRIVER_ID,
+ *  RBX: DRIVER_CLASS,
  *  RCX: REQUEST.
  *  
  *  Returns 
