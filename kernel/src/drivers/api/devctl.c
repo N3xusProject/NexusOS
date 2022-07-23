@@ -24,6 +24,7 @@
 
 #include <drivers/api/devctl.h>
 #include <drivers/ps2/keyb_controller.h>
+#include <libkern/driverctl.h>
 
 /*
  *  LBD meaning Loaded By Default.
@@ -32,17 +33,19 @@
 #define LBD_DRIVER_COUNT 1
 
 
-static DEVCTL_RESP(*driver_req_lines[LBD_DRIVER_COUNT])(DEVCTL_REQ) = {
-    ps2_send_req,
-};
-
-
-DEVCTL_RESP devctl(DRIVER_ID driver_id, DEVCTL_REQ request)
+DEVCTL_RESP devctl(DRIVER_CLASS driver_class, DEVCTL_REQ request)
 {
-    if (driver_id > LBD_DRIVER_COUNT)
+    if (driver_class > LBD_DRIVER_COUNT)
     {
-        return DEVCTL_INVALID_DRIVER_ID;
+        return DEVCTL_INVALID_DRIVER_CLASS;
+    }
+    
+    DEVCTL_RESP(*req_handler)(DEVCTL_REQ) = driverctl_get_reqhandler(driver_class);
+
+    if (req_handler == NULL)
+    {
+        return DEVCTL_INVALID_DRIVER_CLASS;
     }
 
-    driver_req_lines[driver_id](request);
+    req_handler(request);
 }

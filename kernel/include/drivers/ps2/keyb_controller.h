@@ -27,7 +27,8 @@
 
 #include <drivers/api/devctl.h>
 
-#define CPU_RESET_REQ 0xdeb5a40523c
+// Toggle keyboard led.
+#define CAPSLOCK_LED_TOGGLE_REQ 0xdeb5a40523c
 
 void send_cpu_reset(void);
 
