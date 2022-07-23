@@ -1,0 +1,6 @@
+The status is just an unsigned integer.
+
+DEVCTL_OK: 0
+DEVCTL_ERR: 1
+DEVCTL_INVALID_REQUEST: 2
+DEVCTL_INVALID_DRIVER_CLASS: 3

@@ -26,20 +26,11 @@
 #include <drivers/ps2/keyb_controller.h>
 #include <libkern/driverctl.h>
 
-/*
- *  LBD meaning Loaded By Default.
- *
- */
-#define LBD_DRIVER_COUNT 1
+uint64_t g_devctl_data = 0;
 
 
 DEVCTL_RESP devctl(DRIVER_CLASS driver_class, DEVCTL_REQ request)
-{
-    if (driver_class > LBD_DRIVER_COUNT)
-    {
-        return DEVCTL_INVALID_DRIVER_CLASS;
-    }
-    
+{    
     DEVCTL_RESP(*req_handler)(DEVCTL_REQ) = driverctl_get_reqhandler(driver_class);
 
     if (req_handler == NULL)
@@ -47,5 +38,18 @@ DEVCTL_RESP devctl(DRIVER_CLASS driver_class, DEVCTL_REQ request)
         return DEVCTL_INVALID_DRIVER_CLASS;
     }
 
+    return req_handler(request);
+}
+
+
+
+uint64_t devctl_in(DRIVER_CLASS driver_class, DEVCTL_REQ request)
+{
+    g_devctl_data = 0;
+    DEVCTL_RESP(*req_handler)(DEVCTL_REQ) = driverctl_get_reqhandler(driver_class);
+
+    // TODO: Somehow set a status.
+
     req_handler(request);
+    return g_devctl_data;
 }

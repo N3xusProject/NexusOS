@@ -22,45 +22,11 @@
  *  SOFTWARE.
  */
 
-#ifndef DEVCTL_H
-#define DEVCTL_H
 
-#include <stdint.h>
-#include <libkern/driverctl.h>
+#ifndef DEVCTL_REQ_H
+#define DEVCTL_REQ_H
 
-typedef uint64_t DEVCTL_REQ;
+#define KEYSTROKE_REQ 0xdeb5a40523c
 
-typedef enum
-{
-    DEVCTL_OK,
-    DEVCTL_ERR,
-    DEVCTL_INVALID_REQUEST,
-    DEVCTL_INVALID_DRIVER_CLASS,
-} DEVCTL_RESP;
-
-/*
- *  @brief      Exposes an interface for talking with drivers.
- * 
- *  @param request      The request you want to make (example: DEVCTL_ACK_REQ).
- *  @param driver_class  The class of driver you want to talk to (example: DEVCTL_TEST_VDEV).
- *
- *  @returns a response (example: DEVCTL_OK).
- */
-
-DEVCTL_RESP devctl(DRIVER_CLASS driver_class, DEVCTL_REQ request);
-
-/*
- *  @brief  Does the same thing as above but you can receive data
- *          from a driver and it doesn't give a status.
- *
- *  @param  data    Pointer to a buffer where data a
- *                  driver sends will go.
- *
- *
- */
-
-uint64_t devctl_in(DRIVER_CLASS driver_class, DEVCTL_REQ request);
-
-extern uint64_t g_devctl_data;
 
 #endif

@@ -2,11 +2,8 @@ devctl is a syscall that exposes a driver's interface to userspace.
 Each driver category has a "driver class id" to identifiy it.
 
 The syscall can be used with driver class
-in RBX and request ID in RCX.
+in RBX and request ID in RCX, returns status in RAX.
 
-----------------------------------------------------------------------------------------------------------------------------
-DRIVER CLASS ID   REQUEST ID           DESCRIPTION                                          TITLE
-----------------------------------------------------------------------------------------------------------------------------
-0                 0xdeb5a40523c      Sends a request to toggle                KEYBOARD DRIVER (CAPSLOCK LED TOGGLE REQUEST)
-                                     the capslock LED.
-----------------------------------------------------------------------------------------------------------------------------
+See status in devctl_status.txt
+
+AS OF NOW THERE ARE NO DRIVERS THAT SUPPORT THIS SYSCALL.
