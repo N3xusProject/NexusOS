@@ -1,6 +1,8 @@
 devctl is a syscall that exposes a driver's interface to userspace.
-
 Each driver category has a "driver class id" to identifiy it.
+
+The syscall can be used with driver class
+in RBX and request ID in RCX.
 
 ----------------------------------------------------------------------------------------------------------------------------
 DRIVER CLASS ID   REQUEST ID           DESCRIPTION                                          TITLE
