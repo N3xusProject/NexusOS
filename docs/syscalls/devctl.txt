@@ -1,11 +1,10 @@
 devctl is a syscall that exposes a driver's interface to userspace.
 
-Each driver has a "driver id" to identifiy it.
+Each driver category has a "driver class id" to identifiy it.
 
---------------------------------------------------------------------------------------------------------------
-DRIVER ID       REQUEST ID           DESCRIPTION                                             DRIVER TITLE
---------------------------------------------------------------------------------------------------------------
-0             0xdeb5a40523c          Sends a CPU reset.
-                                     NOTE: This will be removed in later                     PS2 KEYBOARD
-                                     versions, be careful depending on it.                   CONTROLLER
---------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+DRIVER CLASS ID   REQUEST ID           DESCRIPTION                                          TITLE
+----------------------------------------------------------------------------------------------------------------------------
+0                 0xdeb5a40523c      Sends a request to toggle                KEYBOARD DRIVER (CAPSLOCK LED TOGGLE REQUEST)
+                                     the capslock LED.
+----------------------------------------------------------------------------------------------------------------------------

@@ -26,31 +26,28 @@
 #define DEVCTL_H
 
 #include <stdint.h>
+#include <libkern/driverctl.h>
 
 typedef uint64_t DEVCTL_REQ;
-
-typedef enum
-{
-    PS2_KEYB_CONTROLLER = 0,
-} DRIVER_ID;
 
 typedef enum
 {
     DEVCTL_OK,
     DEVCTL_ERR,
     DEVCTL_INVALID_REQUEST,
-    DEVCTL_INVALID_DRIVER_ID,
+    DEVCTL_INVALID_DRIVER_CLASS,
 } DEVCTL_RESP;
 
 /*
  *  @brief      Exposes an interface for talking with drivers.
  * 
  *  @param request      The request you want to make (example: DEVCTL_ACK_REQ).
- *  @param driver_id    The ID of the driver you want to talk to (example: DEVCTL_TEST_VDEV).
+ *  @param driver_class  The class of driver you want to talk to (example: DEVCTL_TEST_VDEV).
  *
  *  @returns a response (example: DEVCTL_OK).
  */
-DEVCTL_RESP devctl(DRIVER_ID driver_id, DEVCTL_REQ request);
+
+DEVCTL_RESP devctl(DRIVER_CLASS driver_class, DEVCTL_REQ request);
 
 
 #endif

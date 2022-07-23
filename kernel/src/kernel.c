@@ -71,6 +71,9 @@ static void init_drivers(void)
     init_hdd();
     pit_set_phase(DEFAULT_TIMER_PHASE);
     kprintf("PIT phase set at %d Hz\n", DEFAULT_TIMER_PHASE);
+
+    // Use the PS/2 driver for now.
+    driverctl_set_driver(DRIVERCLASS_KEYBOARD, KEYBOARD_TYPE_PS2);
 }
 
 

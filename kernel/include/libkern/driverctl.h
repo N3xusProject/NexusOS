@@ -40,21 +40,23 @@
  *
  */
 
+
 #include <stdint.h>
+#include <stddef.h>
+
 #define DRIVER_CLASS_COUNT 1
 
 typedef uint8_t DRIVERCTL_TYPE;
 
 typedef enum
 {
-    DRIVERCLASS_HDD,
+    DRIVERCLASS_KEYBOARD,
 } DRIVER_CLASS;
-
 
 typedef enum
 {
-    HDDTYPE_AHCI = 1,
-} DRIVER_HDD_TYPE;
+    KEYBOARD_TYPE_PS2,
+} DRIVER_KEYBOARD_TYPE;
 
 
 /*
@@ -69,5 +71,17 @@ void driverctl_set_driver(DRIVER_CLASS driver_class, DRIVERCTL_TYPE driver_type)
  *
  */
 DRIVERCTL_TYPE driverctl_get_type(DRIVER_CLASS driver_class);
+
+/*
+ *  @brief  Returns a pointer to the function
+ *          that handles requests for the currently
+ *          in use driver class.
+ *
+ *          Returns NULL if no request handler
+ *          was found.
+ *
+ */
+
+void* driverctl_get_reqhandler(DRIVER_CLASS driver_class);
 
 #endif
