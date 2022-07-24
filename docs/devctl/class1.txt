@@ -1,0 +1,5 @@
+<================== REQUEST ID: 0x20309d850a0 ==================>
+
+RDX: Pixel X position.
+RSI: Pixel y position.
+RDI: Pixel color.
