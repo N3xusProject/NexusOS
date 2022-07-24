@@ -26,6 +26,7 @@
 #include <drivers/api/req.h>
 #include <arch/bus/io/io.h>
 #include <arch/apic/lapic.h>
+#include <libkern/log.h>
 #include <stdint.h>
 
 #define CAPSLOCK_LED (1 << 2)
@@ -70,7 +71,7 @@ DEVCTL_RESP ps2_req_respond(DEVCTL_REQ request)
     switch (request)
     {
         case KEYSTROKE_REQ:
-            g_devctl_data = last_keystroke;
+            g_devctl_data = last_keystroke; 
             last_keystroke = 0;
             break;
         default:

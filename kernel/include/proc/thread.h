@@ -46,6 +46,8 @@ struct __attribute__((packed)) Thread
     uint64_t rdi;
     uint64_t rip;
     uint64_t cr3;
+    uint64_t cs;
+    uint64_t ring;
 };
 
 __attribute__((naked)) void threading_init(void);
@@ -62,6 +64,7 @@ __attribute__((naked)) void exit(TEXIT_REASON errno);
  *  @brief      Spawns a new thread.
  *
  *  @param where        Location for thread to start executing.
+ *  @param cs           Current code segment.
  *
  *  @returns            TID of new thread, zero if error (i.e no mem left).
  */

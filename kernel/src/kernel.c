@@ -42,6 +42,7 @@
 #include <proc/thread.h>
 #include <proc/tss.h>
 #include <proc/ring.h>
+#include <drivers/api/devctl.h>
 
 void a(void)
 {
@@ -50,17 +51,6 @@ void a(void)
         CLI;
         kprintf("A\n");
         STI;
-        HLT;
-    }
-}
-
-
-static void done(void)
-{
-    spawn(jmp_to_ring3);
-    STI;
-  	for (;;) 
-    {
         HLT;
     }
 }
@@ -114,9 +104,9 @@ __attribute__((noreturn)) static void init(void) {
     prepare_ring3();
 
     threading_init(); 
-
     kprintf(KINFO "Threading initialized.\n");
-    done();
+
+    jmp_to_ring3();
 
     // We may not return because threading_init()
     // changed stacks and returning would result

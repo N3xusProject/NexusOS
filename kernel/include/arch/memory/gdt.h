@@ -27,6 +27,9 @@
 
 #include <stdint.h>
 
+#define KERNEL_CODE 0x28
+#define KERNEL_DATA 0x30
+
 struct GDTR 
 {
     uint16_t limit;

@@ -6,8 +6,10 @@ global syscall_dispatcher
 extern syscall_regs
 extern syscall_table
 
+;; NOTE: Use anything other than RAX as a return value for syscalls.
+
 ;; If changed, change in syscall.c as well.
-%define MAX_SYSCALLS 3
+%define MAX_SYSCALLS 4
 
 %macro set_reg_at 2
     mov r11, syscall_regs
@@ -45,8 +47,6 @@ syscall_dispatcher:
     imul rax, 8
     add r11, rax
     call [r11]
-
-    get_reg_at 0
 
     get_reg_at 1
     mov rbx, rax

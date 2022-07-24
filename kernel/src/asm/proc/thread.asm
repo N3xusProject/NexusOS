@@ -105,12 +105,11 @@ switch_thread:
     get_thread_get_idx [current_thread], 12
     mov cr3, rax
 
-    times 5 pop rax
     mov rax, [tmp]
     mov [rsp], rax
 
     sti
-    retq
+    iretq
 
 
 spawn:

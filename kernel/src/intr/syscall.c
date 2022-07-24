@@ -25,10 +25,11 @@
 #include <intr/syscall.h>
 #include <libkern/log.h>
 #include <drivers/api/devctl.h>
+#include <drivers/ps2/keyb_controller.h>
 #include <stdint.h>
 
 // If changed, change the macro in syscall.asm too.
-#define MAX_SYSCALLS 3
+#define MAX_SYSCALLS 4
 
 
 struct SycallRegs 
@@ -65,7 +66,7 @@ static void sys_hello(void)
 
 static void sys_devctl(void)
 {
-    syscall_regs.rax = devctl(syscall_regs.rbx, syscall_regs.rcx);
+    syscall_regs.r9 = devctl(syscall_regs.rbx, syscall_regs.rcx);
 }
 
 
@@ -82,7 +83,13 @@ static void sys_devctl(void)
 
 static void sys_devctl_in(void)
 {
-    syscall_regs.rax = devctl_in(syscall_regs.rbx, syscall_regs.rcx);
+    syscall_regs.r9 = devctl_in(syscall_regs.rbx, syscall_regs.rcx);
+}
+
+
+static void sys_reboot(void)
+{
+    send_cpu_reset();
 }
 
 
@@ -90,4 +97,5 @@ void(*syscall_table[MAX_SYSCALLS])(void) = {
     sys_hello,
     sys_devctl,
     sys_devctl_in,
+    sys_reboot,
 };
