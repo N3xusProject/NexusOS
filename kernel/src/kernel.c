@@ -54,6 +54,7 @@ static void init_drivers(void)
 
     // Use the PS/2 driver for now.
     driverctl_set_driver(DRIVERCLASS_KEYBOARD, KEYBOARD_TYPE_PS2);
+    driverctl_set_driver(DRIVERCLASS_FRAMEBUFFER, FRAMEBUFFER_DRIVER_TYPE_DEFAULT);
 }
 
 
