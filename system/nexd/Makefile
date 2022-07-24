@@ -14,7 +14,15 @@ all:
 	    -mno-red-zone        \
 	    -mcmodel=kernel      \
 	    -MMD                 \
-	    -Tlinker.ld			 \
 	    src/main.c -o main.o
-	objcopy -O binary -j .text main.o nexd.bin
-	# rm *.o *.d
+	ld \
+		-nostdlib              \
+		-zmax-page-size=0x1000 \
+		-static                \
+    	-o nexd.sys            \
+    	-Tlinker.ld            \
+    	main.o
+	# objcopy -O binary -j .text main.o nexd.bin
+	rm *.o *.d
+
+

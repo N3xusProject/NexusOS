@@ -22,54 +22,26 @@
  *  SOFTWARE.
  */
 
-#include <intr/intr.h>
-#include <intr/exceptions.h>
-#include <intr/IDT.h>
-#include <intr/irq.h>
-#include <intr/syscall.h>
-#include <arch/apic/ioapic.h>
-#include <drivers/ps2/keyb_controller.h>
-#include <firmware/acpi.h>
+#ifndef ELF_WRAPPER_H
+#define ELF_WRAPPER_H
 
-static void(*exceptions[])(void) = {
-    divide_error,
-    debug_exception,
-    general_protection_fault,
-    general_protection_fault,
-    overflow,
-    bound_range_exceeded,
-    invalid_opcode,
-    no_mathcoprocessor,
-    double_fault,
-    general_protection_fault,
-    invalid_tss,
-    segment_not_present,
-    stack_segment_fault,
-    general_protection_fault,
-    page_fault
-};
+#include <stdint.h>
+#include <elf.h>
+
+#define EXEC_PATH_NOT_FOUND 1
+#define EXEC_ELF_HEADER_BAD 2
 
 
-void intr_setup_irqs(void)
-{
-    // Timer IRQ.
-    set_idt_desc(0x20, irq0, INT_GATE_FLAGS);
-    // ioapic_set_entry(acpi_map_irq(0), 0x20);
+/*
+ *  @brief  Allocates memory for an entry point
+ *          and returns ELF entry point by a module path.
+ *
+ *
+ * @returns entry to elf, otherwise NULL if failure.
+ * 
+ * @param ring3_exec    If 1, the ELF will execute in ring 3.
+ *
+ */
+void* elf_get_entry(const char* path);
 
-    // Keyboard IRQ.
-    set_idt_desc(0x21, irq1_handler, INT_GATE_FLAGS);
-    ioapic_set_entry(acpi_map_irq(1), 0x21);
-}
-
-
-void intr_init(void) 
-{
-     for (uint8_t i = 0; i <= 0xE; ++i) 
-     {
-        set_idt_desc(i, exceptions[i], TRAP_GATE_FLAGS);
-     }
-    
-     set_idt_desc(0x80, syscall_dispatcher, IDT_INT_GATE_USER);
-
-     idt_install();
-}
+#endif

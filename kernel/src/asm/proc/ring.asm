@@ -7,7 +7,6 @@ bits 64
 
 global jmp_to_ring3
 global ring3
-extern ring3_entry
 
 section .text
 jmp_to_ring3:
@@ -26,6 +25,6 @@ jmp_to_ring3:
     pushf
     cli
     push 0x38 | 3
-    push 0x2000               ;; RIP (0x2000 is where nexd is loaded in memory).
+    push 0x2000
     sti
     iretq

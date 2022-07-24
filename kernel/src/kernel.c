@@ -30,6 +30,7 @@
 #include <libkern/panic.h>
 #include <libkern/driverctl.h>
 #include <libkern/driverinit.h>
+#include <libkern/elf.h>
 #include <intr/intr.h>
 #include <arch/memory/pmm.h>
 #include <arch/memory/vmm.h>
@@ -55,6 +56,12 @@ static void init_drivers(void)
     // Use the PS/2 driver for now.
     driverctl_set_driver(DRIVERCLASS_KEYBOARD, KEYBOARD_TYPE_PS2);
     driverctl_set_driver(DRIVERCLASS_FRAMEBUFFER, FRAMEBUFFER_DRIVER_TYPE_DEFAULT);
+}
+
+
+static void done(void)
+{
+    jmp_to_ring3();
 }
 
 
@@ -92,13 +99,18 @@ __attribute__((noreturn)) static void init(void) {
     kprintf(KINFO "TSS initialized.\n");
     load_tss();
     kprintf(KINFO "TSS loaded.\n");
-    prepare_ring3();
+    // prepare_ring3();  
+    
+    void(*nexd)(void) = elf_get_entry("/Nexus/nexd.sys");
 
     threading_init(); 
     kprintf(KINFO "Threading initialized.\n");
     clear_term();
-    jmp_to_ring3();
 
+
+    STI; 
+    done();
+    
     // We may not return because threading_init()
     // changed stacks and returning would result
     // in an invalid opcode exception or something.
