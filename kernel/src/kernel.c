@@ -39,26 +39,16 @@
 #include <arch/apic/lapic.h>
 #include <firmware/acpi.h>
 #include <drivers/clocks/PIT.h>
+#include <drivers/video/fb.h>
 #include <proc/thread.h>
 #include <proc/tss.h>
 #include <proc/ring.h>
-#include <drivers/api/devctl.h>
-
-void a(void)
-{
-    while (1)
-    {
-        CLI;
-        kprintf("A\n");
-        STI;
-        HLT;
-    }
-}
 
 
 static void init_drivers(void)
 {
     init_hdd();
+    fbdriver_init();
     pit_set_phase(DEFAULT_TIMER_PHASE);
     kprintf("PIT phase set at %d Hz\n", DEFAULT_TIMER_PHASE);
 
@@ -105,7 +95,7 @@ __attribute__((noreturn)) static void init(void) {
 
     threading_init(); 
     kprintf(KINFO "Threading initialized.\n");
-
+    clear_term();
     jmp_to_ring3();
 
     // We may not return because threading_init()
