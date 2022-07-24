@@ -26,25 +26,11 @@
 #include <libkern/log.h>
 #include <drivers/api/devctl.h>
 #include <drivers/ps2/keyb_controller.h>
-#include <stdint.h>
 
 // If changed, change the macro in syscall.asm too.
 #define MAX_SYSCALLS 4
 
-
-struct SycallRegs 
-{
-    uint64_t rax;
-    uint64_t rbx;
-    uint64_t rcx;
-    uint64_t rdx;
-    uint64_t rsi;
-    uint64_t rdi;
-    uint64_t r8;
-    uint64_t r9;
-    uint64_t r10;
-} __attribute__((packed)) syscall_regs;
-
+struct SyscallRegs syscall_regs;
 
 static void sys_hello(void)
 {
