@@ -27,6 +27,7 @@
 #define FB_H
 
 #include <stdint.h>
+#include <drivers/api/devctl.h>
 
 /*
  *  @brief  Places a pixel on the screen.
@@ -57,5 +58,14 @@ uint64_t fb_get_height(void);
  */
 void fb_clear(uint32_t color);
 
+/*
+ *  Used by devctl.
+ *  
+ *  RDX: X.
+ *  RSI: Y.
+ *  RDI: Color.
+ *
+ */
+DEVCTL_RESP fb_req_respond(DEVCTL_REQ request);
 
 #endif

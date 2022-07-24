@@ -30,7 +30,7 @@ uint64_t g_devctl_data = 0;
 
 
 DEVCTL_RESP devctl(DRIVER_CLASS driver_class, DEVCTL_REQ request)
-{    
+{
     DEVCTL_RESP(*req_handler)(DEVCTL_REQ) = driverctl_get_reqhandler(driver_class);
 
     if (req_handler == NULL)

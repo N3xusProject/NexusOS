@@ -23,7 +23,9 @@
  */
 
 #include <drivers/video/fb.h>
+#include <drivers/api/req.h>
 #include <proc/mutex.h>
+#include <libkern/log.h>
 #include <limine.h>
 
 static struct limine_framebuffer_request fb_req = {
@@ -81,4 +83,18 @@ void fb_clear(uint32_t color)
     }
 
     mutex_unlock(&mutex);
+}
+
+
+DEVCTL_RESP fb_req_respond(DEVCTL_REQ request)
+{
+
+    switch (request)
+    {
+        case FB_PIXEL_PLACEMENT_REQ:
+            put_pix(syscall_regs.rdx, syscall_regs.rsi, syscall_regs.rdi);
+            return DEVCTL_OK;
+        default:
+            return DEVCTL_INVALID_REQUEST;
+    }
 }
