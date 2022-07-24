@@ -73,7 +73,7 @@ DEVCTL_RESP ps2_req_respond(DEVCTL_REQ request)
         case KEYSTROKE_REQ:
             g_devctl_data = last_keystroke; 
             last_keystroke = 0;
-            break;
+            return DEVCTL_OK;
         default:
             return DEVCTL_INVALID_REQUEST;
     }
