@@ -1,0 +1,18 @@
+Keystroke in RAX holds different information that must
+be extracted:
+
+- Pressed: 0 false, 1, true
+- Scancode
+- Character
+
+Below are the bits of the packet.
+
+--------------------------------
+|           Bits               |
+--------------------------------
+Scancode bits:  15-0
+Character bits: 23-16
+Pressed bit:   24
+
+To extract the scancode you will want to get the first 16 bits.
+To extract the character, you will get bits 16 to 23, etc.
