@@ -9,7 +9,7 @@ RBX: Driver class.
 RCX: Request.
 
 Returns:
-RAX will hold the data, the only downside to this syscall
+R9 will hold the data, the only downside to this syscall
 is you get no status as of now.
 
 
@@ -21,4 +21,5 @@ DRIVER CLASS ID   REQUEST ID           DESCRIPTION                              
 -------------------------------------------------------------------------------------------------------------------------------------
 0                 0xdeb5a40523c      Sends a request to read                KEYBOARD DRIVER (READ KEYSTROKE; RAX <- UNSIGNED DWORD)
                                      a keystroke.
+                                     See docs/devctl_in/class0
 -------------------------------------------------------------------------------------------------------------------------------------

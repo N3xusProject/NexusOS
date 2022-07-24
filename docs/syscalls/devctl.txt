@@ -4,7 +4,7 @@ Each driver category has a "driver class id" to identifiy it.
 Syscall number: 0x1
 
 The syscall can be used with driver class
-in RBX and request ID in RCX, returns status in RAX.
+in RBX and request ID in RCX, returns status in R9.
 
 See status in devctl_status.txt
 
