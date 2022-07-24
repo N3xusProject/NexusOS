@@ -8,4 +8,9 @@ in RBX and request ID in RCX, returns status in R9.
 
 See status in devctl_status.txt
 
-AS OF NOW THERE ARE NO DRIVERS THAT SUPPORT THIS SYSCALL.
+-------------------------------------------------------------------------------------------------------------------------------------
+DRIVER CLASS ID   REQUEST ID           DESCRIPTION                                  TITLE
+-------------------------------------------------------------------------------------------------------------------------------------
+1                 0x20309d850a0      Sends a request to set                     Framebuffer Driver (set pixel).
+                                     a pixel on the screen                      RDX: X, RSI: Y, RDI: Color (ex: 0xFFFFFF for white).
+-------------------------------------------------------------------------------------------------------------------------------------
