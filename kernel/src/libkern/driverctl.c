@@ -24,16 +24,14 @@
 
 #include <libkern/driverctl.h>
 #include <drivers/ps2/keyb_controller.h>
+#include <drivers/video/fb.h>
 
-static DRIVERCTL_TYPE driverctl[DRIVER_CLASS_COUNT];
+__attribute__((section(".data"))) static uint64_t driverctl[DRIVER_CLASS_COUNT];
 
 
 void driverctl_set_driver(DRIVER_CLASS driver_class, DRIVERCTL_TYPE driver_type)
 {
-    if (driverctl[driver_class] == 0)
-    {
-        driverctl[driver_class] = driver_type;
-    }
+    driverctl[driver_class] = driver_type;
 }
 
 
@@ -49,6 +47,8 @@ void* driverctl_get_reqhandler(DRIVER_CLASS driver_class)
     {
         case KEYBOARD_TYPE_PS2:
             return ps2_req_respond;
+        case FRAMEBUFFER_DRIVER_TYPE_DEFAULT:
+            return fb_req_respond;
         default:
             return NULL;
     }

@@ -44,19 +44,22 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define DRIVER_CLASS_COUNT 1
-
-typedef uint8_t DRIVERCTL_TYPE;
+#define DRIVER_CLASS_COUNT 2
 
 typedef enum
 {
     DRIVERCLASS_KEYBOARD,
+    DRIVERCLASS_FRAMEBUFFER
 } DRIVER_CLASS;
 
 typedef enum
 {
-    KEYBOARD_TYPE_PS2,
-} DRIVER_KEYBOARD_TYPE;
+    // Keyboard types.
+    KEYBOARD_TYPE_PS2 = 1,
+
+    // Framebuffer types.
+    FRAMEBUFFER_DRIVER_TYPE_DEFAULT = 2,
+} DRIVERCTL_TYPE;
 
 
 /*
