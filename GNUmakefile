@@ -35,6 +35,7 @@ Nexus.iso: limine kernel
 	mkdir -p base/internals/
 	# cd system/nexd; make; mv nexd.bin ../../base/internals/nexd.sys
 	cd system/nexd; make; mv nexd.sys ../../base/internals/nexd.sys
+	cd system/nexwm; make; mv nexwm.sys ../../base/internals/nexwm.sys
 	rm -rf iso_root
 	mkdir -p iso_root
 	mkdir -p iso_root/Nexus

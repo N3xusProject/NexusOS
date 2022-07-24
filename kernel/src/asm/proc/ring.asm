@@ -8,6 +8,8 @@ bits 64
 global jmp_to_ring3
 global ring3
 
+extern thread_switch_lock
+
 section .text
 jmp_to_ring3:
     cli
@@ -26,5 +28,6 @@ jmp_to_ring3:
     cli
     push 0x38 | 3
     push 0x2000
-    sti
+
+    mov byte [thread_switch_lock], 0
     iretq

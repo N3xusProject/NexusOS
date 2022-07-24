@@ -39,9 +39,9 @@ struct limine_file* get_module_by_name(const char* name)
         {
             return boot_modules_req.response->modules[i];
         }
-
-        return NULL;
     }
+
+    return NULL;
 }
 
 uint64_t get_module_count(void)

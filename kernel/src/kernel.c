@@ -45,6 +45,8 @@
 #include <proc/tss.h>
 #include <proc/ring.h>
 
+extern uint8_t thread_switch_lock;
+
 
 static void init_drivers(void)
 {
@@ -101,14 +103,13 @@ __attribute__((noreturn)) static void init(void) {
     kprintf(KINFO "TSS loaded.\n");
     // prepare_ring3();  
     
+    thread_switch_lock = 1;
     void(*nexd)(void) = elf_get_entry("/Nexus/nexd.sys");
 
     threading_init(); 
     kprintf(KINFO "Threading initialized.\n");
     clear_term();
 
-
-    STI; 
     done();
     
     // We may not return because threading_init()

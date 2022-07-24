@@ -14,6 +14,7 @@ extern vmm_alloc_page
 extern map_stack
 extern kmalloc
 extern vmm_mkpml4
+extern thread_switch_lock
 
 %define PAGE_SIZE 0x1000
 %define STACK_SIZE 0x1000*3
@@ -44,6 +45,10 @@ extern vmm_mkpml4
 
 switch_thread:
     cli
+    
+    cmp byte [thread_switch_lock], 1
+    jge .done
+
     ;; Save thread state.
     ;; Save RIP.
     mov rax, [rsp]
@@ -105,11 +110,20 @@ switch_thread:
     get_thread_get_idx [current_thread], 12
     mov cr3, rax
 
-    mov rax, [tmp]
-    mov [rsp], rax
-
+    times 5 pop rax
+    push 0x40 | 3           ;;SS.
+    push rbp
     sti
-    iretq
+    pushf
+    cli
+    push 0x38 | 3
+
+    mov rax, [tmp]
+    push rax
+
+    .done:
+        sti
+        iretq
 
 
 spawn:
@@ -196,12 +210,10 @@ spawn:
     ;; Return TID.
     get_thread_get_idx [tmp], 0
 
-    sti
     retq
 
     .err:
         mov rax, 0
-        sti
         retq
 
 section .data

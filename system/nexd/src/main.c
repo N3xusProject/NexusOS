@@ -25,14 +25,17 @@
 
 #include <stdint.h>
 
-void nexwm_entry(void);
-
 int main(void)
 {
-    nexwm_entry();
+    const char* const WM_PATH = "/Nexus/nexwm.sys";
+
+    __asm__ __volatile__(
+            "mov $0x4, %%rax; \
+            mov %0, %%rbx; \
+            int $0x80" :: "m" (WM_PATH));
+
     while (1)
     {
-
 
         __asm__ __volatile__(
                 "\

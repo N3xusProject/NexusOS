@@ -67,6 +67,8 @@ __attribute__((naked)) void exit(TEXIT_REASON errno);
  *  @param cs           Current code segment.
  *
  *  @returns            TID of new thread, zero if error (i.e no mem left).
+ *
+ *  NOTE: This executes CLI but doesn't execute STI.
  */
 
 TID spawn(void* where);

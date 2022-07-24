@@ -24,11 +24,13 @@
 
 #include <intr/syscall.h>
 #include <libkern/log.h>
+#include <libkern/elf.h>
 #include <drivers/api/devctl.h>
 #include <drivers/ps2/keyb_controller.h>
+#include <proc/thread.h>
 
 // If changed, change the macro in syscall.asm too.
-#define MAX_SYSCALLS 4
+#define MAX_SYSCALLS 5
 
 struct SyscallRegs syscall_regs;
 
@@ -78,10 +80,38 @@ static void sys_reboot(void)
     send_cpu_reset();
 }
 
+/*
+ *  @brief  Executes an ELF.
+ *
+ *  Args:
+ *
+ *  RBX: path of ELF (has to be loaded at boot).
+ *  
+ *  Returns 0 in R9 if success, otherwise 1.
+ *
+ */
+
+static void sys_exec(void)
+{
+    void(*elf_entry)(void) = elf_get_entry((char*)syscall_regs.rbx);
+
+    if (elf_entry == NULL)
+    {
+        kprintf("AA\n");
+        syscall_regs.r9 = 1;
+    }
+    else
+    {
+        spawn(elf_entry);
+        syscall_regs.r9 = 0;
+    }
+}
+
 
 void(*syscall_table[MAX_SYSCALLS])(void) = {
     sys_hello,
     sys_devctl,
     sys_devctl_in,
     sys_reboot,
+    sys_exec
 };

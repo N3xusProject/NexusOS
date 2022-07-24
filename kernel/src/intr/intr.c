@@ -54,7 +54,7 @@ void intr_setup_irqs(void)
 {
     // Timer IRQ.
     set_idt_desc(0x20, irq0, INT_GATE_FLAGS);
-    // ioapic_set_entry(acpi_map_irq(0), 0x20);
+    ioapic_set_entry(acpi_map_irq(0), 0x20);
 
     // Keyboard IRQ.
     set_idt_desc(0x21, irq1_handler, INT_GATE_FLAGS);

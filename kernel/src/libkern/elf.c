@@ -29,7 +29,6 @@
 #include <arch/memory/vmm.h>
 #include <proc/thread.h>
 #include <proc/ring.h>
-#include <libkern/log.h>
 
 static Elf64_Phdr* progHeaders;
 extern struct Thread* current_thread;

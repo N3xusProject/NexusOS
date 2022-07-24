@@ -25,16 +25,8 @@
 #include <libgui/draw.h>
 #include <libgui/info.h>
 
-static void draw_background(void)
+void main(void)
 {
-    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, 0x1D2021);
-}
-
-
-// TODO: Later just load the ELF
-//       and spawn a thread to it or something.
-void nexwm_entry(void)
-{
-    // Draw a solid background.
-    draw_background();
+    // __asm__ __volatile__("cli; hlt");
+    while (1);
 }

@@ -1,7 +1,6 @@
 .PHONY: all
 all:
 	cd ../../lib; make
-	cd ../nexwm/; make
 	gcc -c -std=gnu11           \
 	    -ffreestanding       \
 	    -fno-stack-protector \
@@ -17,7 +16,7 @@ all:
 		-static                \
     	-o nexd.sys            \
     	-Tlinker.ld            \
-    	main.o ../nexwm/obj/*.o ../../lib/obj/*
+    	main.o ../../lib/obj/*
 	# objcopy -O binary -j .text main.o nexd.bin
 	rm *.o *.d
 

@@ -41,6 +41,14 @@ struct Thread* head_thread;
 static uint64_t rip = 0;
 uint8_t threading_is_init = 0;             // > 0 if threading is enabled.
 
+/*
+ *  if thread_switch_lock > 0 then 
+ *  thread switching is locked and 
+ *  threads won't switch.
+ *
+ */
+uint8_t thread_switch_lock = 0;
+
 void load_pml4(void*);
 
 
