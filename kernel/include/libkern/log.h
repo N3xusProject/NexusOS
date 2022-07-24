@@ -36,5 +36,6 @@
 #define BOLD_YELLOW "\e[1;33m"
 
 void kprintf(char* fmt, ...);
+void clear_term(void);
 
 #endif
