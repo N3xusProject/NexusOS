@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#define DEFAULT_TIMER_PHASE 100     // Hz
+#define DEFAULT_TIMER_PHASE 220     // Hz
 
 
 void pit_set_phase(uint16_t hz);
