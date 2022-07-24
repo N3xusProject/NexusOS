@@ -28,5 +28,5 @@ obj: $(CFILES)
 
 .PHONY: elf
 elf:
-	ld $(LDFLAGS) obj/*.o -o nexwm.sys
+	ld $(LDFLAGS) obj/*.o ../../lib/obj/* -o nexwm.sys
 	@ rm -rf obj

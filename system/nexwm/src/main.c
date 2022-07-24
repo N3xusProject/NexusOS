@@ -27,6 +27,7 @@
 
 void main(void)
 {
-    // __asm__ __volatile__("cli; hlt");
+    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, 0x808080);
+    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, 0x808080);
     while (1);
 }
