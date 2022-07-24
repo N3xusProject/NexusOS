@@ -6,6 +6,9 @@ Syscall number: 0x1
 The syscall can be used with driver class
 in RBX and request ID in RCX, returns status in R9.
 
+Extra args that will go right to a driver should be placed
+in RDX, RSI, RDI, R8, R9 and R10.
+
 See status in devctl_status.txt
 
 -------------------------------------------------------------------------------------------------------------------------------------
