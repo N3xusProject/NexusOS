@@ -1,0 +1,9 @@
+To make a syscall, put the syscall number in RAX,
+and do an int 0x80
+
+Syscall numbers:
+
+0x0 - sys_hello       [Will be removed in later versions].
+0x1 - sys_devctl
+0x2 - sys_devctl_in,
+0x3 - sys_reboot      [Implementation may change in later versions].
