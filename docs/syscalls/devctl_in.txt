@@ -22,4 +22,10 @@ DRIVER CLASS ID   REQUEST ID           DESCRIPTION                              
 0                 0xdeb5a40523c      Sends a request to read                KEYBOARD DRIVER (READ KEYSTROKE; RAX <- UNSIGNED DWORD)
                                      a keystroke.
                                      See docs/devctl_in/class0
+                                    
+1                 0x40280f00884      Requests width from framebuffer        FRAMEBUFFER DRIVER (GET WIDTH).
+                                     (returned in R9).
+
+1                 0xbea4b8190d8      Requests height from framebuffer       FRAMEBUFFER DRIVER (GET HEIGHT).
+                                     (returned in R9).
 -------------------------------------------------------------------------------------------------------------------------------------

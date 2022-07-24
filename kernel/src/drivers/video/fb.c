@@ -94,6 +94,12 @@ DEVCTL_RESP fb_req_respond(DEVCTL_REQ request)
         case FB_PIXEL_PLACEMENT_REQ:
             put_pix(syscall_regs.rdx, syscall_regs.rsi, syscall_regs.rdi);
             return DEVCTL_OK;
+        case FB_GET_WIDTH:
+            g_devctl_data = fb_get_width();
+            break;
+        case FB_GET_HEIGHT:
+            g_devctl_data = fb_get_height();
+            break;
         default:
             return DEVCTL_INVALID_REQUEST;
     }
