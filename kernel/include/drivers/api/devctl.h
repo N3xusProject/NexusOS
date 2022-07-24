@@ -27,6 +27,7 @@
 
 #include <stdint.h>
 #include <libkern/driverctl.h>
+#include <intr/syscall.h>               // For syscall_regs
 
 typedef uint64_t DEVCTL_REQ;
 
