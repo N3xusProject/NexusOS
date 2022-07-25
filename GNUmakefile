@@ -15,10 +15,6 @@ all: Nexus.iso
 run: Nexus.iso
 	qemu-system-$(ARCH) -M q35 -m 2G -drive file=Nexus.iso -boot d -monitor stdio --enable-kvm
 
-.PHONY: debug
-debug:
-	qemu-system-$(ARCH) -M q35 -m 2G -drive file=Nexus.iso -boot d -monitor stdio -d int -D logfile.txt
-
 .PHONY: debug1
 debug1:
 	qemu-system-$(ARCH) -M q35 -m 2G -drive file=Nexus.iso -boot d -monitor stdio -d int -D logfile.txt -s -S
