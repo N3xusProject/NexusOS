@@ -28,7 +28,7 @@
 #include <stdint.h>
 
 
-uint8_t open_window(uint32_t x, uint32_t y, uint16_t width, uint16_t height);
+uint8_t open_window(uint32_t x, uint32_t y, uint16_t width, uint16_t height, const char* title);
 
 
 #endif

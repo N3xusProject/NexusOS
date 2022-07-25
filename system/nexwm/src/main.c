@@ -25,17 +25,24 @@
 #include <libgui/draw.h>
 #include <libgui/info.h>
 #include <window.h>
+#include <stdint.h>
+#include <stddef.h>
 
 #define BG_COLOR 0x1D2021
-
 
 void main(void)
 {
     libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, BG_COLOR);
     libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, BG_COLOR);
     libgui_bufswap();
+    
+    // Write text inside window.
+    open_window(50, 50, 400, 400, "Welcome to NexusOS!");
 
-    open_window(50, 50, 400, 400);
+    libgui_putstr(150, 100, 0xFFFFFF, "Coming Soon!");
+    libgui_putstr(150, 150, 0xFFFFFF, "Press ESC to assert CPU's");
+    libgui_putstr(150, 190, 0xFFFFFF, "reset pin.");
+    libgui_bufswap();
         
     while (1);
 }

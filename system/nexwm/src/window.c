@@ -30,7 +30,7 @@
 #define DEFAULT_WINDOW_COLOR 0x808080
 
 
-uint8_t open_window(uint32_t x, uint32_t y, uint16_t width, uint16_t height)
+uint8_t open_window(uint32_t x, uint32_t y, uint16_t width, uint16_t height, const char* title)
 {
     if (height > MAX_WINDOW_HEIGHT || width > MAX_WINDOW_WIDTH)
     {
@@ -39,9 +39,11 @@ uint8_t open_window(uint32_t x, uint32_t y, uint16_t width, uint16_t height)
 
     // Draw the window body.
     libgui_draw_square(x, y, width, height, 0x808080);
+    libgui_draw_square(x, y, width, height, 0x808080);
 
     // Draw the top bar.
     libgui_draw_square(x, y, width, 17, 0x000000);
+    libgui_putstr(x + 2, y, 0xFFFFFF, title);
 
     libgui_bufswap();
 
