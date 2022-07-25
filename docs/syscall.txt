@@ -7,3 +7,5 @@ Syscall numbers:
 0x1 - sys_devctl
 0x2 - sys_devctl_in,
 0x3 - sys_reboot      [Implementation may change in later versions].
+0x4 - sys_exec
+0x5 - sys_modopen
