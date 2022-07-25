@@ -97,7 +97,6 @@ static void sys_exec(void)
 
     if (elf_entry == NULL)
     {
-        kprintf("AA\n");
         syscall_regs.r9 = 1;
     }
     else
