@@ -25,12 +25,15 @@
 #include <intr/syscall.h>
 #include <libkern/log.h>
 #include <libkern/elf.h>
+#include <libkern/module.h>
 #include <drivers/api/devctl.h>
 #include <drivers/ps2/keyb_controller.h>
+#include <arch/memory/vmm.h>
+#include <arch/memory/kheap.h>
 #include <proc/thread.h>
 
 // If changed, change the macro in syscall.asm too.
-#define MAX_SYSCALLS 5
+#define MAX_SYSCALLS 6
 
 struct SyscallRegs syscall_regs;
 
@@ -107,10 +110,42 @@ static void sys_exec(void)
 }
 
 
+/*
+ *  @brief      Opens a file loaded on boot.
+ *
+ *  Args: 
+ *
+ *  RBX: Path.
+ *  
+ *  Returns pointer to file in R9. NULL if failure. 
+ *
+ */
+
+
+static void sys_modopen(void)
+{
+    struct limine_file* file = get_module_by_name((const char*)syscall_regs.rbx);
+
+    if (file == NULL)
+    {
+        syscall_regs.r9 = 0;
+    }
+    else
+    {
+        extern struct Thread* current_thread;
+        uint16_t* ptr = kmalloc(file->size);
+        vmm_map_page((void*)current_thread->cr3, ptr, PAGE_P_PRESENT | PAGE_RW_WRITABLE | PAGE_US_USER);
+        syscall_regs.r9 = (uint64_t)ptr;
+
+    }
+}
+
+
 void(*syscall_table[MAX_SYSCALLS])(void) = {
     sys_hello,
     sys_devctl,
     sys_devctl_in,
     sys_reboot,
-    sys_exec
+    sys_exec,
+    sys_modopen,
 };
