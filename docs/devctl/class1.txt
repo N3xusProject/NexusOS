@@ -1,5 +1,20 @@
 <================== REQUEST ID: 0x20309d850a0 ==================>
+Places a pixel on the screen.
 
 RDX: Pixel X position.
 RSI: Pixel y position.
 RDI: Pixel color.
+
+
+<================== REQUEST ID: 0x20cad5a8913 ==================>
+
+Swaps buffers.
+
+
+<================== REQUEST ID: 0x5bcff5320c9 ==================>
+Puts a character on the screen.
+
+RDX: Character X position.
+RSI: Character Y position.
+RDI: Color.
+R8: Character.
