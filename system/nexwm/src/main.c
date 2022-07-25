@@ -25,10 +25,13 @@
 #include <libgui/draw.h>
 #include <libgui/info.h>
 
+#define BG_COLOR 0x1D2021
+
+
 void main(void)
 {
-    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, 0x808080);
-    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, 0x808080);
+    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, BG_COLOR);
+    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, BG_COLOR);
     libgui_bufswap();
     while (1);
 }
