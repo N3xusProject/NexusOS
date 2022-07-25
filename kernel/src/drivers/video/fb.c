@@ -136,7 +136,7 @@ static void init_builtin_font(void)
 
 static void put_char(uint32_t x, uint32_t y, uint32_t color, char c) {
     char* fontPtr = builtin_font.glyphBuffer + (c * builtin_font_header->chsize);
-    for (uint64_t cy = y; cy < y + 12; ++cy) {
+    for (uint64_t cy = y; cy < y + 16; ++cy) {
         for (uint64_t cx = x; cx < x + 8; ++cx) {
             if (cy < y+2) continue;     // To remove artifacts on top of letter.
 
