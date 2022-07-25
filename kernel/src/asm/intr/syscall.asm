@@ -9,7 +9,7 @@ extern syscall_table
 ;; NOTE: Use anything other than RAX as a return value for syscalls.
 
 ;; If changed, change in syscall.c as well.
-%define MAX_SYSCALLS 5
+%define MAX_SYSCALLS 6
 
 %macro set_reg_at 2
     mov r11, syscall_regs
