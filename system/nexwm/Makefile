@@ -23,7 +23,7 @@ all: obj elf
 .PHONY: obj
 obj: $(CFILES)
 	@ mkdir -p obj
-	$(CC) -c $(CFLAGS) -Iinclude/libgui/ $^
+	$(CC) -c $(CFLAGS) -Iinclude/ $^
 	@ mv *.o obj/
 
 .PHONY: elf

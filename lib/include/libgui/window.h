@@ -22,20 +22,19 @@
  *  SOFTWARE.
  */
 
-#include <libgui/draw.h>
-#include <libgui/info.h>
-#include <window.h>
+#ifndef LIBGUI_WINDOW_H
+#define LIBGUI_WINDOW_H
 
-#define BG_COLOR 0x1D2021
+#define MAX_WINDOW_WIDTH 1000
+#define MAX_WINDOW_HEIGHT 800
+
+#include <stdint.h>
+
+/*
+ *  @brief  Opens a window, returns non zero value if failure.
+ *
+ */
+uint8_t libgui_open_window(uint32_t x, uint32_t y, uint16_t width, uint16_t height);
 
 
-void main(void)
-{
-    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, BG_COLOR);
-    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, BG_COLOR);
-    libgui_bufswap();
-
-    open_window(50, 50, 400, 400);
-        
-    while (1);
-}
+#endif

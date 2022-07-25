@@ -22,20 +22,13 @@
  *  SOFTWARE.
  */
 
-#include <libgui/draw.h>
-#include <libgui/info.h>
-#include <window.h>
+#ifndef WINDOW_H
+#define WINDOW_H
 
-#define BG_COLOR 0x1D2021
+#include <stdint.h>
 
 
-void main(void)
-{
-    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, BG_COLOR);
-    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, BG_COLOR);
-    libgui_bufswap();
+uint8_t open_window(uint32_t x, uint32_t y, uint16_t width, uint16_t height);
 
-    open_window(50, 50, 400, 400);
-        
-    while (1);
-}
+
+#endif

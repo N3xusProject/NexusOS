@@ -22,20 +22,28 @@
  *  SOFTWARE.
  */
 
-#include <libgui/draw.h>
-#include <libgui/info.h>
 #include <window.h>
+#include <libgui/draw.h>
 
-#define BG_COLOR 0x1D2021
+#define MAX_WINDOW_WIDTH 500
+#define MAX_WINDOW_HEIGHT 800
+#define DEFAULT_WINDOW_COLOR 0x808080
 
 
-void main(void)
+uint8_t open_window(uint32_t x, uint32_t y, uint16_t width, uint16_t height)
 {
-    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, BG_COLOR);
-    libgui_draw_square(0, 0, libgui_get_screen_width(), 4000, BG_COLOR);
+    if (height > MAX_WINDOW_HEIGHT || width > MAX_WINDOW_WIDTH)
+    {
+        return 1;
+    }
+
+    // Draw the window body.
+    libgui_draw_square(x, y, width, height, 0x808080);
+
+    // Draw the top bar.
+    libgui_draw_square(x, y, width, 17, 0x000000);
+
     libgui_bufswap();
 
-    open_window(50, 50, 400, 400);
-        
-    while (1);
+    return 0;
 }
