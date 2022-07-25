@@ -55,3 +55,33 @@ void libgui_bufswap(void)
             mov $0x20cad5a8913, %rcx; \
             int $0x80");
 }
+
+
+void libgui_putchar(uint32_t x, uint32_t y, uint32_t color, char ch)
+{
+    __asm__ __volatile__(
+            "mov $0x1, %%rax; \
+            mov $0x1, %%rbx; \
+            mov $0x5bcff5320c9, %%rcx; \
+            mov %0, %%rdx; \
+            mov %1, %%rsi; \
+            mov %2, %%rdi; \
+            mov %3, %%r8; \
+            int $0x80" :: "m" (x),
+                          "m" (y),
+                          "m" (color),
+                          "m" (ch));
+}
+
+
+void libgui_putstr(uint32_t x, uint32_t y, uint32_t color, const char* str)
+{
+    uint64_t str_length = 0;
+    while (str[str_length++]);
+
+    for (uint32_t i = 0; i < str_length - 1; ++i)
+    {
+        libgui_putchar(x, y, color, *str++);
+        x += 10;
+    }
+}
