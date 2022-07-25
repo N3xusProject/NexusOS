@@ -37,6 +37,7 @@
 #define FB_GET_WIDTH 0x40280f00884
 #define FB_GET_HEIGHT 0xbea4b8190d8
 #define FB_SWAP_BUFFERS 0x20cad5a8913
+#define FB_PUTCHAR 0x5bcff5320c9
 
 
 #endif
