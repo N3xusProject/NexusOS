@@ -45,3 +45,13 @@ void libgui_draw_square(uint32_t x, uint32_t y, uint32_t width, uint32_t height,
         }
     }
 }
+
+
+void libgui_bufswap(void)
+{
+    __asm__ __volatile__(
+            "mov $0x1, %rax; \
+            mov $0x1, %rbx; \
+            mov $0x20cad5a8913, %rcx; \
+            int $0x80");
+}

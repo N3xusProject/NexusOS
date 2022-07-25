@@ -26,6 +26,7 @@
 #include <drivers/api/req.h>
 #include <proc/mutex.h>
 #include <libkern/log.h>
+#include <arch/memory/vmm.h>
 #include <limine.h>
 
 static struct limine_framebuffer_request fb_req = {
@@ -37,6 +38,9 @@ static MUTEXLOCK mutex = 0;
 static uint32_t* addr;
 static uint16_t bpp;                        // Bits per pixel.
 static struct limine_framebuffer* fb;
+static uint32_t* back_buffer;
+
+#define BACKBUF_SIZE (fb->pitch * fb->height)
 
 
 uint64_t fb_get_width(void)
@@ -50,11 +54,32 @@ uint64_t fb_get_height(void)
     return fb->height;
 }
 
+
+static void fb_swap_buffers(void)
+{
+    for (uint64_t i = 0; i < BACKBUF_SIZE / 4; ++i)
+    {
+        addr[i] = back_buffer[i];
+    }
+}
+
 void fbdriver_init(void)
 {
     fb = fb_req.response->framebuffers[0];
     addr = fb->address;
     bpp = fb->bpp;
+
+
+    for (uint64_t i = 0; i < BACKBUF_SIZE; i += 0x1000)
+    {
+        if (i == 0)
+        {
+            back_buffer = vmm_alloc_page();
+            continue;
+        }
+
+        vmm_alloc_page();
+    }
 }
 
 
@@ -67,7 +92,7 @@ void put_pix(uint32_t x, uint32_t y, uint32_t color)
     }
 
     uint32_t pixel_idx = x + y * fb->width;
-    addr[pixel_idx] = color;
+    back_buffer[pixel_idx] = color;
 }
 
 
@@ -100,6 +125,8 @@ DEVCTL_RESP fb_req_respond(DEVCTL_REQ request)
         case FB_GET_HEIGHT:
             g_devctl_data = fb_get_height();
             break;
+        case FB_SWAP_BUFFERS:
+            fb_swap_buffers();
         default:
             return DEVCTL_INVALID_REQUEST;
     }
