@@ -29,7 +29,7 @@
 #include <libkern/log.h>
 #include <stdint.h>
 
-#define CAPSLOCK_LED (1 << 2)
+#define BUFFER_SIZE 250
 
 
 /*
@@ -43,7 +43,9 @@
  */
 
 
-static uint32_t last_keystroke = 0;
+__attribute__((section(".bss"))) static uint32_t buffer[BUFFER_SIZE];
+static uint16_t keystroke_idx = 0;
+
 
 static const char* const SC_ASCII = "\x00\x1B" "1234567890-=" "\x08"
     "\x00" "qwertyuiop[]" "\x0D\x1D" "asdfghjkl;'`" "\x00" "\\"
@@ -57,11 +59,17 @@ void send_cpu_reset(void)
 
 __attribute__((interrupt)) void irq1_handler(void*)
 {
-    last_keystroke = inportb(0x60);                 // Read scancode.
-    uint8_t ascii = SC_ASCII[last_keystroke];
-    uint8_t pressed = !(last_keystroke & 0x80);
+    buffer[keystroke_idx] = inportb(0x60);                 // Read scancode.
+    uint8_t ascii = SC_ASCII[buffer[keystroke_idx]];
+    uint8_t pressed = !(buffer[keystroke_idx] & 0x80);
 
-    last_keystroke = (pressed << 24 | ascii << 16 | last_keystroke);
+    if (keystroke_idx >= BUFFER_SIZE - 1)
+    {
+        keystroke_idx = 0;
+    }
+
+    buffer[keystroke_idx] = (pressed << 24 | ascii << 16 | buffer[keystroke_idx]);
+    ++keystroke_idx;
     lapic_send_eoi();
 }
 
@@ -71,8 +79,14 @@ DEVCTL_RESP ps2_req_respond(DEVCTL_REQ request)
     switch (request)
     {
         case KEYSTROKE_REQ:
-            g_devctl_data = last_keystroke; 
-            last_keystroke = 0;
+            if (keystroke_idx == 0)
+            {
+                g_devctl_data = 0;
+            }
+            else
+            {
+                g_devctl_data = buffer[--keystroke_idx];
+            }
             return DEVCTL_OK;
         default:
             return DEVCTL_INVALID_REQUEST;
