@@ -88,6 +88,9 @@ DEVCTL_RESP ps2_req_respond(DEVCTL_REQ request)
                 g_devctl_data = buffer[--keystroke_idx];
             }
             return DEVCTL_OK;
+        case FLUSH_KEYSTROKES_REQ:
+            keystroke_idx = 0;
+            return DEVCTL_OK;
         default:
             return DEVCTL_INVALID_REQUEST;
     }
